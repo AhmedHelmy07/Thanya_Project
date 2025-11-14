@@ -24,7 +24,7 @@ const VitalsChart: React.FC<{ vitals: Vital[] }> = ({ vitals }) => {
 
   return (
     <div className="p-4 bg-slate-50 rounded-lg">
-      <h4 className="font-semibold text-gray-700 mb-2">Heart Rate Trend (bpm)</h4>
+      <h4 className="font-semibold text-gray-700 mb-2">مؤشر معدل ضربات القلب (نبضة/دقيقة)</h4>
       <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-auto">
         <polyline
           fill="none"
@@ -54,7 +54,26 @@ const VitalsTab: React.FC<VitalsTabProps> = ({ vitals }) => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blood Pressure</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heart Rate</th>
-              <th scope="col" className="px-6 py-3 text
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ضغط الدم</th>
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">معدل ضربات القلب</th>
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحرارة (°م)</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {vitals.map((vital, index) => (
+              <tr key={index} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{new Date(vital.date).toLocaleDateString('ar-EG')}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{vital.bloodPressure}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{vital.heartRate} bpm</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{vital.temperature}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default VitalsTab;

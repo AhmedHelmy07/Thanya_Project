@@ -26,13 +26,13 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ tabs, activeTab, setActiv
               transition-all duration-200 ease-in-out
               ${
                 activeTab === tab.id
-                  ? 'border-emerald-500 text-emerald-600'
+                  ? 'border-yellow-500 text-emerald-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }
             `}
             aria-current={activeTab === tab.id ? 'page' : undefined}
           >
-            <tab.icon className={`mr-2 h-5 w-5 ${activeTab === tab.id ? 'text-emerald-500' : 'text-gray-400'}`} />
+            <tab.icon className={`ml-2 h-5 w-5 ${activeTab === tab.id ? 'text-emerald-500' : 'text-gray-400'}`} />
             {tab.label}
           </button>
         ))}

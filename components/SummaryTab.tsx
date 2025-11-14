@@ -20,8 +20,8 @@ const AppointmentCard: React.FC<{ appointment: Appointment }> = ({ appointment }
             <p className="font-semibold text-emerald-700">{appointment.reason}</p>
             <p className="text-sm text-gray-600">{appointment.doctor}</p>
         </div>
-        <div className="text-right">
-            <p className="text-sm font-medium text-gray-800">{new Date(appointment.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <div className="text-left">
+            <p className="text-sm font-medium text-gray-800">{new Date(appointment.date).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
             <p className="text-sm text-gray-500">{appointment.time}</p>
         </div>
     </div>
@@ -32,20 +32,20 @@ const SummaryTab: React.FC<SummaryTabProps> = ({ patient, appointments }) => {
   return (
     <div className="space-y-6 animate-fadeIn">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Patient Information</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">معلومات المريض</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <InfoCard title="Primary Physician" value={patient.primaryPhysician} />
-          <InfoCard title="Insurance Provider" value={patient.insuranceProvider} />
-          <InfoCard title="Patient ID" value={patient.id} />
+          <InfoCard title="الطبيب الأساسي" value={patient.primaryPhysician} />
+          <InfoCard title="شركة التأمين" value={patient.insuranceProvider} />
+          <InfoCard title="معرّف المريض" value={patient.id} />
         </div>
       </div>
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Appointments</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">المواعيد القادمة</h3>
         <div className="space-y-3">
           {appointments.length > 0 ? (
             appointments.map(app => <AppointmentCard key={app.id} appointment={app} />)
           ) : (
-            <p className="text-gray-500">No upcoming appointments.</p>
+            <p className="text-gray-500">لا توجد مواعيد قادمة.</p>
           )}
         </div>
       </div>

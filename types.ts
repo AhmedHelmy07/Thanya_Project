@@ -3,7 +3,7 @@ export interface Patient {
   id: string;
   name: string;
   dateOfBirth: string;
-  gender: string;
+  gender: 'ذكر' | 'أنثى';
   avatarUrl: string;
   contact: {
     phone: string;
@@ -24,9 +24,9 @@ export interface Medication {
 }
 
 export enum AllergySeverity {
-  Mild = 'Mild',
-  Moderate = 'Moderate',
-  Severe = 'Severe'
+  Mild = 'خفيفة',
+  Moderate = 'متوسطة',
+  Severe = 'شديدة'
 }
 
 export interface Allergy {
@@ -50,7 +50,7 @@ export interface LabResult {
     value: string;
     referenceRange: string;
     date: string;
-    status: 'Normal' | 'Abnormal' | 'Pending';
+    status: 'طبيعي' | 'غير طبيعي' | 'قيد الانتظار';
 }
 
 export interface Appointment {
@@ -59,5 +59,14 @@ export interface Appointment {
     time: string;
     doctor: string;
     reason: string;
-    status: 'Scheduled' | 'Completed' | 'Cancelled';
+    status: 'مجدول' | 'مكتمل' | 'ملغي';
+}
+
+export interface Device {
+    id: string;
+    name: string;
+    model: string;
+    status: 'متصل' | 'غير متصل';
+    lastSync: string;
+    imageUrl: string;
 }

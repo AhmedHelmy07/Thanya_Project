@@ -19,7 +19,7 @@ const AllergyCard: React.FC<{ allergy: Allergy }> = ({ allergy }) => {
       <div className="flex justify-between items-start">
         <div>
           <p className="text-md font-bold text-gray-800">{allergy.allergen}</p>
-          <p className="text-sm text-gray-600 mt-1">Reaction: {allergy.reaction}</p>
+          <p className="text-sm text-gray-600 mt-1">رد الفعل: {allergy.reaction}</p>
         </div>
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${severityStyles[allergy.severity]}`}>
           {allergy.severity}
@@ -33,9 +33,9 @@ const AllergiesTab: React.FC<AllergiesTabProps> = ({ allergies }) => {
   return (
     <div className="animate-fadeIn">
       <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Known Allergies</h3>
+          <h3 className="text-lg font-semibold text-gray-900">الحساسية المعروفة</h3>
           <button className="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-all duration-200 shadow-sm">
-            Add Allergy
+            إضافة حساسية
           </button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

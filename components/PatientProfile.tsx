@@ -1,20 +1,22 @@
-
 import React, { useState, useMemo } from 'react';
 import type { Patient, Medication, Allergy, Vital, LabResult, Appointment } from '../types';
-import { mockPatient, mockMedications, mockAllergies, mockVitals, mockLabResults, mockAppointments } from '../constants';
+import { mockMedications, mockAllergies, mockVitals, mockLabResults, mockAppointments } from '../constants';
 import PatientHeader from './PatientHeader';
 import TabNavigation from './TabNavigation';
 import SummaryTab from './SummaryTab';
 import MedicationsTab from './MedicationsTab';
 import AllergiesTab from './AllergiesTab';
 import VitalsTab from './VitalsTab';
-import { SummaryIcon, MedicationIcon, AllergyIcon, VitalsIcon } from './icons';
+import { SummaryIcon, MedicationIcon, AllergyIcon, VitalsIcon, ArrowRightIcon } from './icons';
 
-const PatientProfile: React.FC = () => {
+interface PatientProfileProps {
+  patient: Patient;
+  onBack: () => void;
+}
+
+const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onBack }) => {
   const [activeTab, setActiveTab] = useState('summary');
   
-  // In a real app, this data would come from an API call
-  const patientData: Patient = mockPatient;
   const medications: Medication[] = mockMedications;
   const allergies: Allergy[] = mockAllergies;
   const vitals: Vital[] = mockVitals;
@@ -22,16 +24,16 @@ const PatientProfile: React.FC = () => {
   const appointments: Appointment[] = mockAppointments;
 
   const tabs = useMemo(() => [
-    { id: 'summary', label: 'Summary', icon: SummaryIcon },
-    { id: 'medications', label: 'Medications', icon: MedicationIcon },
-    { id: 'allergies', label: 'Allergies', icon: AllergyIcon },
-    { id: 'vitals', label: 'Vitals', icon: VitalsIcon },
+    { id: 'summary', label: 'الملخص', icon: SummaryIcon },
+    { id: 'medications', label: 'الأدوية', icon: MedicationIcon },
+    { id: 'allergies', label: 'الحساسية', icon: AllergyIcon },
+    { id: 'vitals', label: 'العلامات الحيوية', icon: VitalsIcon },
   ], []);
 
   const renderContent = () => {
     switch (activeTab) {
       case 'summary':
-        return <SummaryTab patient={patientData} appointments={appointments.slice(0, 2)} />;
+        return <SummaryTab patient={patient} appointments={appointments.slice(0, 2)} />;
       case 'medications':
         return <MedicationsTab medications={medications} />;
       case 'allergies':
@@ -39,13 +41,22 @@ const PatientProfile: React.FC = () => {
       case 'vitals':
         return <VitalsTab vitals={vitals} />;
       default:
-        return <div className="text-center p-8">Select a tab to view details.</div>;
+        return <div className="text-center p-8">اختر تبويبًا لعرض التفاصيل.</div>;
     }
   };
 
   return (
-    <div className="space-y-6">
-      <PatientHeader patient={patientData} />
+    <div className="space-y-6 animate-fadeIn">
+      <div className="mb-4">
+        <button 
+            onClick={onBack} 
+            className="flex items-center text-sm font-medium text-gray-600 hover:text-emerald-700 transition-colors"
+        >
+            <ArrowRightIcon className="h-5 w-5 ml-1" />
+            العودة إلى لوحة التحكم
+        </button>
+      </div>
+      <PatientHeader patient={patient} />
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <TabNavigation tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
         <div className="p-4 sm:p-6 transition-all duration-300">
