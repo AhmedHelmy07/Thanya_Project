@@ -89,7 +89,7 @@ const App: React.FC = () => {
       case 'auth':
         return <AuthPage onLoginSuccess={(u) => { setCurUser(u); navigateTo('dashboard'); }} />;
       case 'profile':
-        return selectedPatient ? <PatientProfile patient={selectedPatient} onBack={handleBackToDashboard} /> : <PatientDashboard onSelectPatient={handleSelectPatient} />;
+        return selectedPatient ? <PatientProfile patient={selectedPatient} onBack={handleBackToDashboard} medicalRecord={medicalRecord} /> : <PatientDashboard onSelectPatient={handleSelectPatient} />;
       case 'dashboard':
         return <PatientDashboard onSelectPatient={handleSelectPatient} />;
       case 'devices':

@@ -29,7 +29,7 @@ const AppointmentCard: React.FC<{ appointment: Appointment }> = ({ appointment }
 );
 
 
-const SummaryTab: React.FC<SummaryTabProps> = ({ patient, appointments }) => {
+const SummaryTab: React.FC<SummaryTabProps> = ({ patient, appointments, medicalRecord }) => {
   return (
     <div className="space-y-6 animate-fadeIn">
       <div>

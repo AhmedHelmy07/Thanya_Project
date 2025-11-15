@@ -12,9 +12,10 @@ import { SummaryIcon, MedicationIcon, AllergyIcon, VitalsIcon, ArrowRightIcon } 
 interface PatientProfileProps {
   patient: Patient;
   onBack: () => void;
+  medicalRecord?: import('../types').MedicalRecord | null;
 }
 
-const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onBack }) => {
+const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onBack, medicalRecord }) => {
   const [activeTab, setActiveTab] = useState('summary');
   
   const medications: Medication[] = mockMedications;
@@ -33,7 +34,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onBack }) => {
   const renderContent = () => {
     switch (activeTab) {
       case 'summary':
-        return <SummaryTab patient={patient} appointments={appointments.slice(0, 2)} />;
+        return <SummaryTab patient={patient} appointments={appointments.slice(0, 2)} medicalRecord={medicalRecord} />;
       case 'medications':
         return <MedicationsTab medications={medications} />;
       case 'allergies':
