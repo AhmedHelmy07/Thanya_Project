@@ -104,6 +104,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
+      <div className="bg-yellow-50 text-yellow-800 text-center py-1">DEBUG: App component rendered</div>
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
