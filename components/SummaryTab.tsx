@@ -1,10 +1,11 @@
 
 import React from 'react';
-import type { Patient, Appointment } from '../types';
+import type { Patient, Appointment, MedicalRecord } from '../types';
 
 interface SummaryTabProps {
   patient: Patient;
   appointments: Appointment[];
+  medicalRecord?: MedicalRecord | null;
 }
 
 const InfoCard: React.FC<{ title: string; value: string }> = ({ title, value }) => (
@@ -49,6 +50,17 @@ const SummaryTab: React.FC<SummaryTabProps> = ({ patient, appointments }) => {
           )}
         </div>
       </div>
+      {medicalRecord && (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">السجلات الطبية</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <InfoCard title="فصيلة الدم" value={medicalRecord.bloodType || 'غير محدد'} />
+            <InfoCard title="الحساسيات" value={(medicalRecord.allergies || []).join(', ') || 'لا توجد'} />
+            <InfoCard title="الأدوية الحالية" value={(medicalRecord.currentMedicines || []).join(', ') || 'لا توجد'} />
+            <InfoCard title="العمليات الجراحية" value={(medicalRecord.pastSurgeries || []).join(', ') || 'لا توجد'} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
