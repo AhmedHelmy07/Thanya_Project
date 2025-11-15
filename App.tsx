@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PatientDashboard from './components/PatientDashboard';
 import PatientProfile from './components/PatientProfile';
 import HomePage from './components/HomePage';
@@ -7,7 +7,11 @@ import ContactPage from './components/ContactPage';
 import { ThanyaLogo } from './components/icons';
 import { mockPatients } from './constants';
 import type { Patient } from './types';
-import { db } from './firebase'; // <-- Import db from your firebase config
+import { db, auth, firebaseAuth } from './firebase'; // <-- Import db and auth from your firebase config
+import { onAuthStateChanged } from 'firebase/auth';
+import AuthPage from './components/AuthPage';
+import type { User as AppUser, MedicalRecord } from './types';
+import { getMedicalRecord } from './firebase';
 
 // --- Firebase Status Note ---
 // The `firebase.ts` file has been created. To connect the app:
@@ -21,11 +25,13 @@ import { db } from './firebase'; // <-- Import db from your firebase config
 //    const querySnapshot = await getDocs(collection(db, "patients"));
 //    const patientsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-type View = 'home' | 'dashboard' | 'profile' | 'devices' | 'contact';
+type View = 'home' | 'dashboard' | 'profile' | 'devices' | 'contact' | 'auth';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [curUser, setCurUser] = useState<AppUser | null>(null);
+  const [medicalRecord, setMedicalRecord] = useState<MedicalRecord | null>(null);
 
   const selectedPatient = selectedPatientId
     ? mockPatients.find(p => p.id === selectedPatientId)
@@ -45,6 +51,26 @@ const App: React.FC = () => {
     setCurrentView(view);
   }
 
+  useEffect(() => {
+    // Listen for auth changes
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurUser({ uid: user.uid, name: user.displayName || '', email: user.email || '' });
+        // fetch user doc and medical record if available
+        const userDoc = await firebaseAuth.getUserDoc(user.uid);
+        if (userDoc) {
+          setCurUser((prev) => ({ ...(prev as AppUser), ...userDoc } as AppUser));
+        }
+        const mr = await getMedicalRecord(user.uid);
+        if (mr) setMedicalRecord(mr as MedicalRecord);
+      } else {
+        setCurUser(null);
+         setMedicalRecord(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   const handleAboutClick = (e: React.MouseEvent) => {
       e.preventDefault();
       if (currentView !== 'home') {
@@ -60,6 +86,8 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     switch (currentView) {
+      case 'auth':
+        return <AuthPage onLoginSuccess={(u) => { setCurUser(u); navigateTo('dashboard'); }} />;
       case 'profile':
         return selectedPatient ? <PatientProfile patient={selectedPatient} onBack={handleBackToDashboard} /> : <PatientDashboard onSelectPatient={handleSelectPatient} />;
       case 'dashboard':
@@ -88,9 +116,11 @@ const App: React.FC = () => {
                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('devices'); }} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200">الأجهزة</a>
                <a href="#about-us" onClick={handleAboutClick} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200">عنّا</a>
                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('contact'); }} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200">اتصل بنا</a>
-               <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('dashboard'); }} className="px-4 py-2 text-sm font-semibold text-emerald-700 bg-yellow-400 rounded-md hover:bg-yellow-500 transition-all duration-200 shadow-sm">
-                تسجيل الدخول
-               </a>
+               {curUser ? (
+                 <button onClick={() => { firebaseAuth.signout(); setCurUser(null); navigateTo('home'); }} className="px-4 py-2 text-sm font-semibold text-emerald-700 bg-yellow-400 rounded-md hover:bg-yellow-500 transition-all duration-200 shadow-sm">تسجيل الخروج</button>
+               ) : (
+                 <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('auth'); }} className="px-4 py-2 text-sm font-semibold text-emerald-700 bg-yellow-400 rounded-md hover:bg-yellow-500 transition-all duration-200 shadow-sm">تسجيل الدخول</a>
+               )}
             </div>
           </div>
         </nav>

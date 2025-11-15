@@ -1,4 +1,6 @@
 import React from 'react';
+import logo from '../images/logo.png';
+import logoWide from '../images/logo_wide.png';
 
 // NOTE: Using image tags to point to physical logo files as requested.
 // The paths are now absolute from the public root folder.
@@ -6,7 +8,7 @@ import React from 'react';
 export const ThanyaLogo: React.FC<React.ImgHTMLAttributes<HTMLImageElement>> = (props) => (
   <img 
     {...props}
-    src="/images/logo.png" 
+    src={logo}
     alt="شعار ثانية" 
   />
 );
@@ -14,7 +16,7 @@ export const ThanyaLogo: React.FC<React.ImgHTMLAttributes<HTMLImageElement>> = (
 export const ThanyaLogoWide: React.FC<React.ImgHTMLAttributes<HTMLImageElement>> = (props) => (
     <img 
     {...props}
-    src="/images/logo_wide.png" 
+    src={logoWide}
     alt="شعار ثانية العريض" 
   />
 );

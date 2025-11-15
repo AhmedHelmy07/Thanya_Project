@@ -3,7 +3,7 @@ export interface Patient {
   id: string;
   name: string;
   dateOfBirth: string;
-  gender: 'ذكر' | 'أنثى';
+  gender: string; // DB may use 'Male'/'Female' or Arabic equivalents. Keep generic.
   avatarUrl: string;
   contact: {
     phone: string;
@@ -12,6 +12,26 @@ export interface Patient {
   };
   primaryPhysician: string;
   insuranceProvider: string;
+}
+
+export interface User {
+  uid: string;
+  name: string;
+  email: string;
+  bandId?: string;
+  dob?: string;
+  gender?: string;
+  height?: string;
+  weight?: string;
+  createdAt?: any;
+}
+
+export interface MedicalRecord {
+  id?: string;
+  allergies?: string[];
+  bloodType?: string;
+  currentMedicines?: string[];
+  pastSurgeries?: string[];
 }
 
 export interface Medication {
