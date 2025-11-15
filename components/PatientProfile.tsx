@@ -10,19 +10,20 @@ import VitalsTab from './VitalsTab';
 import { SummaryIcon, MedicationIcon, AllergyIcon, VitalsIcon, ArrowRightIcon } from './icons';
 
 interface PatientProfileProps {
-  patient: Patient;
+  patient?: Patient | null;
   onBack: () => void;
   medicalRecord?: import('../types').MedicalRecord | null;
+  currentUserId?: string;
 }
 
-const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onBack, medicalRecord }) => {
+const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onBack, medicalRecord, currentUserId }) => {
   const [activeTab, setActiveTab] = useState('summary');
   
-  const medications: Medication[] = mockMedications;
-  const allergies: Allergy[] = mockAllergies;
-  const vitals: Vital[] = mockVitals;
-  const labResults: LabResult[] = mockLabResults;
-  const appointments: Appointment[] = mockAppointments;
+  const medications: Medication[] = [];
+  const allergies: Allergy[] = [];
+  const vitals: Vital[] = [];
+  const labResults: LabResult[] = [];
+  const appointments: Appointment[] = [];
 
   const tabs = useMemo(() => [
     { id: 'summary', label: 'الملخص', icon: SummaryIcon },
@@ -57,7 +58,14 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onBack, medica
             العودة إلى لوحة التحكم
         </button>
       </div>
-      <PatientHeader patient={patient} />
+      {patient ? (
+        <PatientHeader patient={patient} />
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <h2 className="text-lg font-semibold">ملفي الطبي</h2>
+          <p className="text-sm text-gray-600">عرض وتعديل السجلات الخاصة بك.</p>
+        </div>
+      )}
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <TabNavigation tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
         <div className="p-4 sm:p-6 transition-all duration-300">

@@ -20,6 +20,15 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "YOUR_APP_ID"
 };
 
+// Basic runtime guard: warn if the project appears unconfigured in production
+if (!import.meta.env.DEV) {
+  const missing = ['VITE_FIREBASE_API_KEY','VITE_FIREBASE_PROJECT_ID','VITE_FIREBASE_APP_ID'].filter(k => !import.meta.env[k]);
+  if (missing.length) {
+    // eslint-disable-next-line no-console
+    console.warn('Firebase environment variables appear to be missing:', missing.join(', '));
+  }
+}
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
@@ -39,6 +48,11 @@ export async function createUserProfile(uid: string, userData: Record<string, un
 export async function createMedicalRecord(uid: string, data: Record<string, unknown>) {
   const recordRef = doc(db, 'medical_records', uid);
   await setDoc(recordRef, data);
+}
+
+export async function updateMedicalRecord(uid: string, data: Record<string, unknown>) {
+  const recordRef = doc(db, 'medical_records', uid);
+  await setDoc(recordRef, { ...data, updatedAt: serverTimestamp() }, { merge: true } as any);
 }
 
 export const firebaseAuth = {
