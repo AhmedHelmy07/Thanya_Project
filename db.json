@@ -6,7 +6,7 @@
       "description": "جهاز مقاوم للماء مع بطارية تدوم 30 يومًا",
       "price": 1500,
       "currency": "EGP",
-      "image_url": "https://cdn.thanya.com/p1.jpg",
+      "image_url": "/images/band.png",
       "in_stock": true
     },
     {
@@ -15,7 +15,16 @@
       "description": "يراقب معدل ضربات القلب وضغط الدم",
       "price": 950,
       "currency": "EGP",
-      "image_url": "https://cdn.thanya.com/p2.jpg",
+      "image_url": "/images/WhatsApp Image 2025-10-10 at 7.47.26 AM.png",
+      "in_stock": false
+    },
+        {
+      "id": "p3",
+      "title": "جهاز تتبع ذكي V2",
+      "description": "جهاز مقاوم للماء مع بطارية تدوم 30 يومًا",
+      "price": 1500,
+      "currency": "EGP",
+      "image_url": "/images/band.png",
       "in_stock": true
     }
   ],

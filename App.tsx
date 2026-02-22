@@ -12,6 +12,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import AuthPage from './components/AuthPage';
 import type { User as AppUser, MedicalRecord } from './types';
 import SOSPage from './components/SOSPage';
+import StorePage from './components/StorePage';
 import { getMedicalRecord } from './firebase';
 
 // --- Firebase Status Note ---
@@ -26,7 +27,7 @@ import { getMedicalRecord } from './firebase';
 //    const querySnapshot = await getDocs(collection(db, "patients"));
 //    const patientsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-type View = 'home' | 'dashboard' | 'profile' | 'devices' | 'contact' | 'auth' | 'sos';
+type View = 'home' | 'dashboard' | 'profile' | 'devices' | 'contact' | 'auth' | 'sos' | 'store';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -89,8 +90,12 @@ const App: React.FC = () => {
     switch (currentView) {
       case 'auth':
         return <AuthPage onLoginSuccess={(u) => { setCurUser(u); navigateTo('dashboard'); }} />;
-        case 'sos':
+      case 'sos':
           return <SOSPage />;
+
+      case 'store':
+          return <StorePage />;
+
       case 'profile':
         if (selectedPatient) {
           return <PatientProfile patient={selectedPatient} onBack={handleBackToDashboard} medicalRecord={medicalRecord} />;
@@ -124,8 +129,8 @@ const App: React.FC = () => {
             <div className="hidden md:flex items-center space-x-6">
                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('dashboard'); }} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200">لوحة التحكم</a>
                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('devices'); }} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200">الأجهزة</a>
-               <a 
-              href="#" onClick={(e) => { e.preventDefault(); navigateTo('sos'); }} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200"> الطوارئ</a>
+               <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('sos'); }} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200"> الطوارئ</a>
+               <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('store');}} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200"> المتجر</a>
                <a href="#about-us" onClick={handleAboutClick} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200">عنّا</a>
                <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('contact'); }} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200">اتصل بنا</a>
                {curUser ? (
