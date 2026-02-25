@@ -4,36 +4,28 @@ import PatientProfile from './components/PatientProfile';
 import HomePage from './components/HomePage';
 import DevicesPage from './components/DevicesPage';
 import ContactPage from './components/ContactPage';
-import { ThanyaLogo } from './components/icons';
 import { mockPatients } from './constants';
 import type { Patient } from './types';
-import { db, auth, firebaseAuth } from './firebase'; // <-- Import db and auth from your firebase config
+import { auth, firebaseAuth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import AuthPage from './components/AuthPage';
 import type { User as AppUser, MedicalRecord } from './types';
 import SOSPage from './components/SOSPage';
-import StorePage from './components/StorePage';
 import { getMedicalRecord } from './firebase';
 
-// --- Firebase Status Note ---
-// The `firebase.ts` file has been created. To connect the app:
-// 1. Go to your Firebase project settings.
-// 2. Find your `firebaseConfig` object.
-// 3. Copy your project's keys into the placeholder values in `firebase.ts`.
-// 4. In components (e.g., PatientDashboard), you can now replace
-//    the usage of `mockPatients` with a Firestore query to fetch live data.
-//    Example:
-//    import { collection, getDocs } from "firebase/firestore";
-//    const querySnapshot = await getDocs(collection(db, "patients"));
-//    const patientsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+// 📌 استيراد اللوجو PNG من المسار الصحيح
+import LogoImage from './images/logos.png';
 
-type View = 'home' | 'dashboard' | 'profile' | 'devices' | 'contact' | 'auth' | 'sos' | 'store';
+type View = 'home' | 'dashboard' | 'profile' | 'devices' | 'contact' | 'auth' | 'sos';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [curUser, setCurUser] = useState<AppUser | null>(null);
   const [medicalRecord, setMedicalRecord] = useState<MedicalRecord | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
 
   const selectedPatient = selectedPatientId
     ? mockPatients.find(p => p.id === selectedPatientId)
@@ -48,17 +40,16 @@ const App: React.FC = () => {
     setSelectedPatientId(null);
     setCurrentView('dashboard');
   };
-  
+
   const navigateTo = (view: View) => {
     setCurrentView(view);
-  }
+    setIsOpen(false);
+  };
 
   useEffect(() => {
-    // Listen for auth changes
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurUser({ uid: user.uid, name: user.displayName || '', email: user.email || '' });
-        // fetch user doc and medical record if available
         const userDoc = await firebaseAuth.getUserDoc(user.uid);
         if (userDoc) {
           setCurUser((prev) => ({ ...(prev as AppUser), ...userDoc } as AppUser));
@@ -67,23 +58,24 @@ const App: React.FC = () => {
         if (mr) setMedicalRecord(mr as MedicalRecord);
       } else {
         setCurUser(null);
-         setMedicalRecord(null);
+        setMedicalRecord(null);
       }
     });
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const handleAboutClick = (e: React.MouseEvent) => {
-      e.preventDefault();
-      if (currentView !== 'home') {
-          navigateTo('home');
-          // Use timeout to allow the view to render before scrolling
-          setTimeout(() => {
-              document.getElementById('about-us')?.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-      } else {
-          document.getElementById('about-us')?.scrollIntoView({ behavior: 'smooth' });
-      }
+    e.preventDefault();
+    navigateTo('home');
+    setTimeout(() => {
+      document.getElementById('about-us')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   const renderContent = () => {
@@ -91,11 +83,7 @@ const App: React.FC = () => {
       case 'auth':
         return <AuthPage onLoginSuccess={(u) => { setCurUser(u); navigateTo('dashboard'); }} />;
       case 'sos':
-          return <SOSPage />;
-
-      case 'store':
-          return <StorePage />;
-
+        return <SOSPage />;
       case 'profile':
         if (selectedPatient) {
           return <PatientProfile patient={selectedPatient} onBack={handleBackToDashboard} medicalRecord={medicalRecord} />;
@@ -110,46 +98,127 @@ const App: React.FC = () => {
         return <DevicesPage />;
       case 'contact':
         return <ContactPage />;
-      case 'home':
       default:
         return <HomePage onNavigateToDashboard={() => navigateTo('dashboard')} />;
     }
   };
 
+  const NavButton = ({ view, label }: { view: View; label: string }) => (
+    <button
+      onClick={() => navigateTo(view)}
+      className={`relative font-medium transition-all duration-200
+        ${currentView === view
+          ? 'text-emerald-500 dark:text-emerald-400'
+          : 'text-gray-600 hover:text-emerald-500 dark:text-gray-300 dark:hover:text-emerald-400'
+        }`}
+    >
+      {label}
+      {currentView === view && (
+        <span className="absolute -bottom-1 right-0 w-full h-[2px] bg-emerald-500 dark:bg-emerald-400 rounded"></span>
+      )}
+    </button>
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
-      <div className="bg-yellow-50 text-yellow-800 text-center py-1">DEBUG: App component rendered</div>
-      <header className="bg-white shadow-sm sticky top-0 z-50">
+    <div className={`${darkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-800'} min-h-screen transition-colors duration-500`}>
+
+      {/* Navbar */}
+      <header
+        className={`sticky top-0 z-50 border-b transition-all duration-300
+          ${scrollY > 20
+            ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 shadow-lg'
+            : 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md'
+          }`}
+      >
         <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('home'); }} className="flex items-center cursor-pointer">
-              <ThanyaLogo className="h-8 w-auto text-emerald-600" />
-              <span className="mr-3 text-2xl font-bold text-emerald-700 tracking-tight">ثانية</span>
+
+            {/* Logo */}
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); navigateTo('home'); }}
+              className="flex items-center gap-2 group"
+            >
+              <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-800 group-hover:scale-105 transition">
+                <img src={LogoImage} alt="ثانية" className="h-6 w-6 object-contain" />
+              </div>
+              <span className="text-2xl font-extrabold tracking-tight">
+                ثانية
+              </span>
             </a>
-            <div className="hidden md:flex items-center space-x-6">
-               <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('dashboard'); }} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200">لوحة التحكم</a>
-               <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('devices'); }} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200">الأجهزة</a>
-               <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('sos'); }} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200"> الطوارئ</a>
-               <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('store');}} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200"> المتجر</a>
-               <a href="#about-us" onClick={handleAboutClick} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200">عنّا</a>
-               <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('contact'); }} className="text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200">اتصل بنا</a>
-               {curUser ? (
-                 <button onClick={() => { firebaseAuth.signout(); setCurUser(null); navigateTo('home'); }} className="px-4 py-2 text-sm font-semibold text-emerald-700 bg-yellow-400 rounded-md hover:bg-yellow-500 transition-all duration-200 shadow-sm">تسجيل الخروج</button>
-               ) : (
-                 <a href="#" onClick={(e) => { e.preventDefault(); navigateTo('auth'); }} className="px-4 py-2 text-sm font-semibold text-emerald-700 bg-yellow-400 rounded-md hover:bg-yellow-500 transition-all duration-200 shadow-sm">تسجيل الدخول</a>
-               )}
+
+            {/* Desktop Menu */}
+            <div className="hidden md:flex items-center gap-8">
+              <NavButton view="dashboard" label="لوحة التحكم" />
+              <NavButton view="devices" label="الأجهزة" />
+              <NavButton view="sos" label="الطوارئ" />
+              <button onClick={handleAboutClick} className="text-gray-600 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400 font-medium">عنّا</button>
+              <NavButton view="contact" label="اتصل بنا" />
+
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="px-3 py-1 rounded-lg border border-gray-400 dark:border-gray-600 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+              >
+                {darkMode ? '☀️' : '🌙'}
+              </button>
+
+              {curUser ? (
+                <button
+                  onClick={() => { firebaseAuth.signout(); setCurUser(null); navigateTo('home'); }}
+                  className="px-5 py-2 text-sm font-semibold text-emerald-800 bg-yellow-400 rounded-xl hover:bg-yellow-500 hover:shadow-md transition-all duration-300"
+                >
+                  تسجيل الخروج
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigateTo('auth')}
+                  className="px-5 py-2 text-sm font-semibold text-emerald-800 bg-yellow-400 rounded-xl hover:bg-yellow-500 hover:shadow-md transition-all duration-300"
+                >
+                  تسجيل الدخول
+                </button>
+              )}
+            </div>
+
+            {/* Mobile Button */}
+            <button
+              className="md:hidden flex flex-col justify-center items-center w-8 h-8 relative"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              <span className={`bg-emerald-700 dark:bg-emerald-400 h-[2px] w-6 absolute transition-all duration-300 ${isOpen ? 'rotate-45' : '-translate-y-2'}`} />
+              <span className={`bg-emerald-700 dark:bg-emerald-400 h-[2px] w-6 absolute transition-all duration-300 ${isOpen ? 'opacity-0' : ''}`} />
+              <span className={`bg-emerald-700 dark:bg-emerald-400 h-[2px] w-6 absolute transition-all duration-300 ${isOpen ? '-rotate-45' : 'translate-y-2'}`} />
+            </button>
+
+          </div>
+
+          {/* Mobile Menu */}
+          <div className={`md:hidden overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+            <div className="flex flex-col gap-4 pb-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+              <NavButton view="dashboard" label="لوحة التحكم" />
+              <NavButton view="devices" label="الأجهزة" />
+              <NavButton view="sos" label="الطوارئ" />
+              <NavButton view="contact" label="اتصل بنا" />
+              <button onClick={() => setDarkMode(!darkMode)} className="px-3 py-1 rounded-lg border border-gray-400 dark:border-gray-600 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                {darkMode ? '☀️' : '🌙'}
+              </button>
             </div>
           </div>
+
         </nav>
       </header>
-      
+
+      {/* Main */}
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         {renderContent()}
       </main>
 
-      <footer className="text-center py-6 mt-12 border-t border-gray-200">
-          <p className="text-sm text-gray-500">&copy; {new Date().getFullYear()} ثانية الصحية. جميع الحقوق محفوظة.</p>
+      {/* Footer */}
+      <footer className="text-center py-6 mt-12 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          &copy; {new Date().getFullYear()} ثانية الصحية. جميع الحقوق محفوظة.
+        </p>
       </footer>
+
     </div>
   );
 };

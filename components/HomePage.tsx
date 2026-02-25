@@ -1,95 +1,172 @@
-import React from 'react';
-import { SummaryIcon, MedicationIcon, VitalsIcon, ChevronLeftIcon, ThanyaLogoWide } from './icons';
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  SummaryIcon,
+  MedicationIcon,
+  VitalsIcon,
+  ThanyaLogoWide,
+} from "./icons";
 
 interface HomePageProps {
-    onNavigateToDashboard: () => void;
+  onNavigateToDashboard: () => void;
 }
 
-const FeatureCard: React.FC<{ icon: React.ElementType, title: string, description: string }> = ({ icon: Icon, title, description }) => (
-    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow transform hover:-translate-y-1 duration-300">
-        <div className="flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 text-emerald-600 mb-4">
-            <Icon className="h-6 w-6" />
-        </div>
-        <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
-        <p className="text-gray-600">{description}</p>
+/* ================= Medical Loader ================= */
+const MedicalLoader = () => {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+
+      {/* Logo */}
+      <div className="mb-6">
+        <ThanyaLogoWide className="h-16 opacity-90" />
+      </div>
+
+      {/* Image Container Premium Style */}
+      <div className="mb-8 p-5 rounded-3xl bg-emerald-50/40 backdrop-blur-md shadow-md">
+        <img
+          src="./images/Untitled-2.png"
+          alt="loading medical"
+          className="h-28 w-auto object-contain rounded-2xl transition-transform duration-500 hover:scale-105 animate-pulse"
+        />
+      </div>
+
+      {/* Progress Loader */}
+      <div className="w-64 h-1 bg-gray-200 rounded-full overflow-hidden relative">
+        <div className="absolute left-0 top-0 h-full w-1/2 bg-emerald-600 animate-[loading_1.5s_ease-in-out_infinite]" />
+      </div>
+
+      <p className="mt-6 text-gray-500 text-sm">
+        جاري تحميل بياناتك بأمان...
+      </p>
     </div>
+  );
+};
+
+/* ================= Feature Card ================= */
+const FeatureCard = ({ icon: Icon, title, description }: any) => (
+  <motion.div
+    whileHover={{ y: -6 }}
+    className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition"
+  >
+    <div className="h-14 w-14 flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 mb-6">
+      <Icon className="h-7 w-7" />
+    </div>
+
+    <h3 className="text-xl font-semibold text-gray-900 mb-3">
+      {title}
+    </h3>
+
+    <p className="text-gray-600 leading-relaxed">
+      {description}
+    </p>
+  </motion.div>
 );
 
+/* ================= Experience Card ================= */
+const ExperienceCard = ({ title, description, color }: any) => (
+  <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition">
+    <h3 className={`text-xl font-semibold mb-4 ${color}`}>
+      {title}
+    </h3>
+
+    <p className="text-gray-600 leading-relaxed">
+      {description}
+    </p>
+  </div>
+);
+
+/* ================= Home Page ================= */
 const HomePage: React.FC<HomePageProps> = ({ onNavigateToDashboard }) => {
-    return (
-        <div className="space-y-20">
-            {/* Hero Section */}
-            <section className="text-center bg-white p-10 rounded-2xl shadow-xl overflow-hidden" style={{ backgroundImage: 'url(https://www.transparenttextures.com/patterns/az-subtle.png)'}}>
-                <div className="animate-fadeIn" style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}>
-                    <ThanyaLogoWide className="h-24 w-auto mx-auto mb-4" />
-                </div>
-                <div className="animate-fadeIn" style={{ animationDelay: '0.4s', animationFillMode: 'backwards' }}>
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-emerald-800 leading-tight">
-                        لأن كل ثانية تهم
-                    </h1>
-                    <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
-                        تطبيق ثانية يمنحك وصولاً فورياً لسجلاتك الطبية ويشاركها مع من يهمك عند الطوارئ، لتضمن أفضل رعاية في أسرع وقت.
-                    </p>
-                </div>
-                <div className="mt-8 flex justify-center gap-4 animate-fadeIn" style={{ animationDelay: '0.6s', animationFillMode: 'backwards' }}>
-                    <button 
-                        onClick={onNavigateToDashboard}
-                        className="flex items-center px-8 py-3 text-lg font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow-md transition-all duration-300 transform hover:scale-105"
-                    >
-                        <span>ابدأ الآن</span>
-                        <ChevronLeftIcon className="h-5 w-5 mr-2" />
-                    </button>
-                    <button className="px-8 py-3 text-lg font-semibold text-emerald-700 bg-gray-100 rounded-lg hover:bg-gray-200 shadow-md transition-all duration-300">
-                        اعرف المزيد
-                    </button>
-                </div>
-            </section>
-            
-            {/* Features Section */}
-            <section className="animate-fadeIn" style={{ animationDelay: '0.8s', animationFillMode: 'backwards' }}>
-                <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">لماذا تختار ثانية؟</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <FeatureCard 
-                        icon={SummaryIcon}
-                        title="سجل طبي موحد"
-                        description="جميع معلوماتك الصحية، من التاريخ المرضي إلى نتائج المختبر، في مكان واحد آمن وسهل الوصول."
-                    />
-                    <FeatureCard 
-                        icon={VitalsIcon}
-                        title="اتصال بالأجهزة الذكية"
-                        description="اربط أجهزتك الصحية لمراقبة العلامات الحيوية بشكل مستمر ومشاركتها مع طبيبك."
-                    />
-                    <FeatureCard 
-                        icon={MedicationIcon}
-                        title="إدارة الأدوية"
-                        description="تنبيهات بمواعيد الأدوية، سجل للجرعات، ومعلومات شاملة عن أدويتك لالتزام أفضل."
-                    />
-                </div>
-            </section>
-            
-            {/* About Section */}
-            <section id="about-us" className="bg-white rounded-2xl shadow-lg overflow-hidden animate-fadeIn" style={{ animationDelay: '1s', animationFillMode: 'backwards' }}>
-                <div className="flex flex-col md:flex-row items-center">
-                    <div className="md:w-1/2 p-8 lg:p-12">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-4">عن ثانية</h2>
-                        <p className="text-gray-600 mb-4 leading-relaxed">
-                            نحن فريق من المبتكرين في مجال التكنولوجيا الصحية، يجمعنا شغف مشترك لإحداث فرق حقيقي في حياة الناس. تأسست "ثانية" على مبدأ أن التكنولوجيا يجب أن تخدم الإنسان، خاصة في أوقات الحاجة.
-                        </p>
-                         <p className="text-gray-600 leading-relaxed">
-                            نحن ملتزمون بتطوير حلول تجعل الرعاية الصحية أكثر شفافية، كفاءة، وأمانًا للجميع، وإنشاء جسر بين المريض والطبيب لتحسين جودة الرعاية.
-                        </p>
-                    </div>
-                    <div className="md:w-1/2 h-64 md:h-auto">
-                        <img 
-                            src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop" 
-                            alt="طبيب يستخدم جهاز لوحي"
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                </div>
-            </section>
-        </div>
-    );
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 1200);
+  }, []);
+
+  if (loading) return <MedicalLoader />;
+
+  return (
+    <div className="bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.06),transparent_60%)] bg-gray-50 min-h-screen">
+
+      <div className="max-w-7xl mx-auto px-6 pt-24 pb-20 space-y-28">
+
+        {/* ================= Hero ================= */}
+        <section className="text-center max-w-3xl mx-auto pt-16 space-y-8">
+
+          <h1 className="text-4xl md:text-5xl font-bold text-emerald-900 leading-tight tracking-tight">
+            لأن كل ثانية تهم
+          </h1>
+
+          <p className="text-lg text-gray-600 leading-relaxed">
+            تطبيق ثانية يمنحك وصولاً فورياً لسجلاتك الطبية ويشاركها عند الطوارئ
+            لضمان أفضل رعاية في أسرع وقت ممكن.
+          </p>
+
+          <button
+            onClick={onNavigateToDashboard}
+            className="px-11 py-4 text-lg font-semibold text-white bg-emerald-600 rounded-xl shadow-lg hover:bg-emerald-700 transition-all duration-300 hover:scale-[1.03]"
+          >
+            إنشاء حساب مجاني
+          </button>
+
+        </section>
+
+        {/* ================= Features ================= */}
+        <section>
+
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-14">
+            لماذا تختار ثانية؟
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <FeatureCard
+              icon={SummaryIcon}
+              title="سجل طبي موحد"
+              description="جميع معلوماتك الصحية في مكان واحد آمن وسهل الوصول."
+            />
+
+            <FeatureCard
+              icon={VitalsIcon}
+              title="مراقبة مستمرة"
+              description="متابعة العلامات الحيوية بشكل مستمر بسهولة."
+            />
+
+            <FeatureCard
+              icon={MedicationIcon}
+              title="إدارة الأدوية"
+              description="تنبيهات دقيقة وسجل جرعات منظم لالتزام أفضل."
+            />
+          </div>
+
+        </section>
+
+        {/* ================= Dual Experience ================= */}
+        <section className="text-center space-y-10">
+
+          <h2 className="text-3xl font-bold text-gray-900">
+            تجربة ثانية تناسبك
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+
+            <ExperienceCard
+              title="للـ مرضى"
+              description="مشاركة السجلات الطبية، إدارة الأدوية، والاستجابة السريعة للطوارئ."
+              color="text-emerald-700"
+            />
+
+            <ExperienceCard
+              title="للأطباء"
+              description="الوصول إلى بيانات المرضى بشكل منظم مع أدوات متابعة طبية احترافية."
+              color="text-blue-700"
+            />
+
+          </div>
+        </section>
+
+      </div>
+    </div>
+  );
 };
 
 export default HomePage;
