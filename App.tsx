@@ -239,6 +239,7 @@ const App: React.FC = () => {
                 </div>
 
               ) : (
+                
 
                 <button
                   onClick={()=>navigateTo('auth')}
@@ -259,7 +260,7 @@ const App: React.FC = () => {
 
           </div>
 
-          <AnimatePresence>
+          {/* <AnimatePresence>
             {mobileMenuOpen && (
               <motion.div
                 initial={{ height:0, opacity:0 }}
@@ -274,7 +275,70 @@ const App: React.FC = () => {
                 <button onClick={()=>navigateTo('contact')}>اتصل بنا</button>
               </motion.div>
             )}
-          </AnimatePresence>
+          </AnimatePresence> */}
+          <AnimatePresence>
+  {mobileMenuOpen && (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: "auto", opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      className="lg:hidden px-6 pb-6 flex flex-col gap-4 text-gray-600 dark:text-gray-300 overflow-hidden"
+    >
+      <button onClick={() => navigateTo("dashboard")}>
+        لوحة التحكم
+      </button>
+
+      <button onClick={() => navigateTo("devices")}>
+        الأجهزة
+      </button>
+
+      <button onClick={() => navigateTo("sos")}>
+        الطوارئ
+      </button>
+
+      <button onClick={() => navigateTo("store")}>
+        المتجر
+      </button>
+
+      <button onClick={() => navigateTo("home")}>
+        عنّا
+      </button>
+
+      <button onClick={() => navigateTo("contact")}>
+        اتصل بنا
+      </button>
+
+      {/* Dark Mode */}
+      <button
+        onClick={() => setDarkMode((prev) => !prev)}
+        className="text-left"
+      >
+        {darkMode ? "الوضع الفاتح ☀️" : "الوضع الداكن 🌙"}
+      </button>
+
+      {/* Auth */}
+      {curUser ? (
+        <button
+          onClick={() => {
+            firebaseAuth.signout();
+            setCurUser(null);
+            navigateTo("home");
+          }}
+          className="text-red-500"
+        >
+          تسجيل الخروج
+        </button>
+      ) : (
+        <button
+          onClick={() => navigateTo("auth")}
+          className="text-emerald-600 dark:text-emerald-400 font-semibold"
+        >
+          تسجيل الدخول
+        </button>
+      )}
+    </motion.div>
+  )}
+</AnimatePresence>
 
         </div>
       </header>

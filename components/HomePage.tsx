@@ -164,6 +164,8 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToDashboard }) => {
           </div>
         </section>
 
+
+
       </div>
     </div>
   );
