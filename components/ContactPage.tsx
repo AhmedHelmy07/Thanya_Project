@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { MessageIcon, PhoneIcon, EmailIcon, UserIcon, CheckCircleIcon } from './icons';
 
 const ContactPage: React.FC = () => {
-    const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+    });
+
     const [isSubmitted, setIsSubmitted] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -12,85 +19,164 @@ const ContactPage: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Here you would connect to Firebase to store the message
+
         console.log("Form submitted:", formData);
+
         setIsSubmitted(true);
-        setFormData({ name: '', email: '', subject: '', message: '' });
+
+        setFormData({
+            name: '',
+            email: '',
+            subject: '',
+            message: ''
+        });
     };
 
     return (
-        <div className="animate-fadeIn">
-            <div className="text-center">
-                <h1 className="text-4xl font-bold text-gray-900 flex items-center justify-center">
-                    <MessageIcon className="h-10 w-10 ml-3 text-emerald-600" />
-                    تواصل معنا
-                </h1>
-                <p className="mt-2 text-lg text-gray-600">نحن هنا للمساعدة. أرسل لنا استفسارك وسنرد عليك قريبًا.</p>
-            </div>
+        <div className="animate-fadeIn min-h-screen flex items-center justify-center p-6">
 
-            <div className="mt-12 max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
-                {isSubmitted ? (
-                    <div className="text-center py-10">
-                        <CheckCircleIcon className="h-16 w-16 mx-auto text-emerald-500" />
-                        <h3 className="mt-4 text-2xl font-semibold text-gray-800">شكرًا لك!</h3>
-                        <p className="mt-2 text-gray-600">تم استلام رسالتك بنجاح. سنتواصل معك في أقرب وقت ممكن.</p>
-                        <button 
-                            onClick={() => setIsSubmitted(false)}
-                            className="mt-6 px-6 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-all"
-                        >
-                            إرسال رسالة أخرى
-                        </button>
+            <div className="w-full max-w-6xl space-y-14">
+
+                {/* Header */}
+                <div className="text-center space-y-5">
+
+                    <div className="inline-flex justify-center items-center w-24 h-24 rounded-3xl bg-emerald-50 dark:bg-emerald-900/30 shadow-xl">
+                        <MessageIcon className="h-12 w-12 text-emerald-600" />
                     </div>
-                ) : (
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">الاسم الكامل</label>
-                                <div className="relative">
-                                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                        <UserIcon className="h-5 w-5 text-gray-400" />
-                                    </div>
-                                    <input type="text" name="name" id="name" required value={formData.name} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm pr-10 focus:border-emerald-500 focus:ring-emerald-500" />
-                                </div>
-                            </div>
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
-                                <div className="relative">
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                        <EmailIcon className="h-5 w-5 text-gray-400" />
-                                    </div>
-                                    <input type="email" name="email" id="email" required value={formData.email} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm pr-10 focus:border-emerald-500 focus:ring-emerald-500" />
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">الموضوع</label>
-                            <input type="text" name="subject" id="subject" required value={formData.subject} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500" />
-                        </div>
-                        <div>
-                            <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">رسالتك</label>
-                            <textarea name="message" id="message" rows={5} required value={formData.message} onChange={handleChange} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"></textarea>
-                        </div>
-                        <div>
-                            <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300">
-                                إرسال الرسالة
-                            </button>
-                        </div>
-                    </form>
-                )}
-            </div>
-             <div className="mt-10 text-center text-gray-600">
-                <p>يمكنك أيضًا التواصل معنا عبر:</p>
-                <div className="flex justify-center items-center space-x-6 mt-3">
-                    <a href="mailto:support@thanya.com" className="flex items-center hover:text-emerald-600">
-                        <EmailIcon className="h-5 w-5 ml-2" />
-                        support@thanya.com
-                    </a>
-                    <a href="tel:+123456789" className="flex items-center hover:text-emerald-600">
-                        <PhoneIcon className="h-5 w-5 ml-2" />
-                        +1 (234) 567-89
-                    </a>
+
+                    <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                        تواصل معنا
+                    </h1>
+
+                    <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                        نحن هنا لمساعدتك في أي استفسار. ارسل رسالتك وسنقوم بالرد عليك في أقرب وقت.
+                    </p>
+
                 </div>
+
+                {/* Form Card */}
+                <div className="relative">
+
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-gray-900 rounded-3xl blur-3xl opacity-60"></div>
+
+                    <div className="relative backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-2xl p-10 transition-all duration-500 hover:shadow-3xl">
+
+                        {isSubmitted ? (
+
+                            <div className="text-center space-y-7 py-16">
+
+                                <CheckCircleIcon className="h-24 w-24 mx-auto text-emerald-500 animate-pulse" />
+
+                                <div className="space-y-3">
+                                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
+                                        شكرًا لك!
+                                    </h3>
+
+                                    <p className="text-gray-500 dark:text-gray-400 text-lg">
+                                        تم استلام رسالتك بنجاح وسنرد عليك قريبًا.
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={() => setIsSubmitted(false)}
+                                    className="px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xl hover:shadow-emerald-400/40 transition-all duration-300 hover:scale-105"
+                                >
+                                    إرسال رسالة أخرى
+                                </button>
+
+                            </div>
+
+                        ) : (
+
+                            <form onSubmit={handleSubmit} className="space-y-9">
+
+                                <div className="grid md:grid-cols-2 gap-8">
+
+                                    {[
+                                        { label: "الاسم الكامل", name: "name", type: "text", icon: UserIcon },
+                                        { label: "البريد الإلكتروني", name: "email", type: "email", icon: EmailIcon }
+                                    ].map((field, index) => {
+
+                                        const Icon = field.icon;
+
+                                        return (
+                                            <div key={index} className="space-y-3 group">
+
+                                                <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                                                    {field.label}
+                                                </label>
+
+                                                <div className="relative">
+
+                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-5 text-gray-400 group-focus-within:text-emerald-500 transition">
+                                                        <Icon className="h-5 w-5" />
+                                                    </div>
+
+                                                    <input
+                                                        type={field.type}
+                                                        name={field.name}
+                                                        required
+                                                        value={(formData as any)[field.name]}
+                                                        onChange={handleChange}
+                                                        className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 pr-14 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300"
+                                                    />
+
+                                                </div>
+
+                                            </div>
+                                        );
+                                    })}
+
+                                </div>
+
+                                <div className="space-y-3">
+
+                                    <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                                        الموضوع
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="subject"
+                                        required
+                                        value={formData.subject}
+                                        onChange={handleChange}
+                                        className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300"
+                                    />
+
+                                </div>
+
+                                <div className="space-y-3">
+
+                                    <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                                        رسالتك
+                                    </label>
+
+                                    <textarea
+                                        name="message"
+                                        rows={6}
+                                        required
+                                        value={formData.message}
+                                        onChange={handleChange}
+                                        className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300 resize-none"
+                                    />
+
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="w-full py-5 rounded-2xl text-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xl hover:shadow-emerald-400/30 transition-all duration-300 hover:scale-[1.01]"
+                                >
+                                    إرسال الرسالة
+                                </button>
+
+                            </form>
+
+                        )}
+
+                    </div>
+                </div>
+
             </div>
         </div>
     );

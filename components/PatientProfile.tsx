@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import type { Patient, Medication, Allergy, Vital, LabResult, Appointment } from '../types';
-import { mockMedications, mockAllergies, mockVitals, mockLabResults, mockAppointments } from '../constants';
 import PatientHeader from './PatientHeader';
 import TabNavigation from './TabNavigation';
 import SummaryTab from './SummaryTab';
@@ -16,9 +15,14 @@ interface PatientProfileProps {
   currentUserId?: string;
 }
 
-const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onBack, medicalRecord, currentUserId }) => {
+const PatientProfile: React.FC<PatientProfileProps> = ({
+  patient,
+  onBack,
+  medicalRecord,
+}) => {
+
   const [activeTab, setActiveTab] = useState('summary');
-  
+
   const medications: Medication[] = [];
   const allergies: Allergy[] = [];
   const vitals: Vital[] = [];
@@ -34,44 +38,85 @@ const PatientProfile: React.FC<PatientProfileProps> = ({ patient, onBack, medica
 
   const renderContent = () => {
     switch (activeTab) {
+
       case 'summary':
-        return <SummaryTab patient={patient} appointments={appointments.slice(0, 2)} medicalRecord={medicalRecord} />;
+        return (
+          <SummaryTab
+            patient={patient}
+            appointments={appointments.slice(0, 2)}
+            medicalRecord={medicalRecord}
+          />
+        );
+
       case 'medications':
         return <MedicationsTab medications={medications} />;
+
       case 'allergies':
         return <AllergiesTab allergies={allergies} />;
+
       case 'vitals':
         return <VitalsTab vitals={vitals} />;
+
       default:
-        return <div className="text-center p-8">اختر تبويبًا لعرض التفاصيل.</div>;
+        return (
+          <div className="flex flex-col items-center justify-center py-14 text-sm text-gray-400">
+            اختر تبويبًا لعرض التفاصيل الطبية
+          </div>
+        );
     }
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
-      <div className="mb-4">
-        <button 
-            onClick={onBack} 
-            className="flex items-center text-sm font-medium text-gray-600 hover:text-emerald-700 transition-colors"
+    <div className="max-w-7xl mx-auto px-4 lg:px-10 py-8 space-y-8">
+
+      {/* BACK BUTTON */}
+      <div className="flex items-center">
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-emerald-600 transition"
         >
-            <ArrowRightIcon className="h-5 w-5 ml-1" />
-            العودة إلى لوحة التحكم
+          <ArrowRightIcon className="w-5 h-5" />
+          العودة إلى لوحة التحكم
         </button>
       </div>
+
+      {/* PATIENT HEADER */}
       {patient ? (
-        <PatientHeader patient={patient} />
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 overflow-hidden transition">
+          <PatientHeader patient={patient} />
+        </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <h2 className="text-lg font-semibold">ملفي الطبي</h2>
-          <p className="text-sm text-gray-600">عرض وتعديل السجلات الخاصة بك.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-md border border-gray-100 dark:border-gray-700 p-6">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight">
+            ملفي الطبي
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-xl leading-relaxed">
+            عرض وتحديث السجلات الطبية الشخصية والتحكم في المعلومات الصحية بسهولة وأمان.
+          </p>
         </div>
       )}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <TabNavigation tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
-        <div className="p-4 sm:p-6 transition-all duration-300">
+
+      {/* TABS CONTAINER */}
+      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden transition">
+
+        {/* TAB NAVIGATION */}
+        <div className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/60 backdrop-blur-xl">
+
+          <TabNavigation
+            tabs={tabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+
+        </div>
+
+        {/* TAB CONTENT */}
+        <div className="p-6 sm:p-8 lg:p-10 min-h-[280px] transition-all duration-300">
           {renderContent()}
         </div>
+
       </div>
+
     </div>
   );
 };

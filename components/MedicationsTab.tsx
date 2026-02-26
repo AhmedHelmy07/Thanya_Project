@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { Medication } from '../types';
 
@@ -7,36 +6,86 @@ interface MedicationsTabProps {
 }
 
 const MedicationsTab: React.FC<MedicationsTabProps> = ({ medications }) => {
+
   return (
-    <div className="animate-fadeIn">
-      <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">الأدوية الحالية</h3>
-          <button className="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-all duration-200 shadow-sm">
-            إضافة دواء
-          </button>
+    <div className="animate-fadeIn space-y-6">
+
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
+
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+          الأدوية الحالية
+        </h3>
+
+        <button className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-md">
+          إضافة دواء
+        </button>
+
       </div>
-      <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الاسم</th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الجرعة</th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التكرار</th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الطبيب الواصف</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {medications.map((med) => (
-              <tr key={med.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{med.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{med.dosage}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{med.frequency}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{med.prescribedBy}</td>
+
+      {/* Table Container */}
+      <div className="overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+
+        <div className="overflow-x-auto">
+
+          <table className="w-full min-w-[600px] divide-y divide-gray-200 dark:divide-gray-700">
+
+            <thead className="bg-gray-50 dark:bg-gray-800/60">
+              <tr className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">
+
+                <th className="px-7 py-5 text-right">
+                  الاسم
+                </th>
+
+                <th className="px-7 py-5 text-right">
+                  الجرعة
+                </th>
+
+                <th className="px-7 py-5 text-right">
+                  التكرار
+                </th>
+
+                <th className="px-7 py-5 text-right">
+                  الطبيب الواصف
+                </th>
+
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+
+              {medications.map((med) => (
+                <tr
+                  key={med.id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition duration-200"
+                >
+
+                  <td className="px-7 py-4 text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                    {med.name}
+                  </td>
+
+                  <td className="px-7 py-4 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                    {med.dosage}
+                  </td>
+
+                  <td className="px-7 py-4 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                    {med.frequency}
+                  </td>
+
+                  <td className="px-7 py-4 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                    {med.prescribedBy}
+                  </td>
+
+                </tr>
+              ))}
+
+            </tbody>
+
+          </table>
+
+        </div>
       </div>
+
     </div>
   );
 };

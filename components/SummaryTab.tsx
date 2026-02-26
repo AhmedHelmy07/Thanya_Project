@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import type { Patient, Appointment, MedicalRecord } from '../types';
 import { updateMedicalRecord } from '../firebase';
@@ -11,42 +10,80 @@ interface SummaryTabProps {
 }
 
 const InfoCard: React.FC<{ title: string; value: string }> = ({ title, value }) => (
-  <div className="bg-slate-50 p-4 rounded-lg">
-    <p className="text-sm font-medium text-gray-500">{title}</p>
-    <p className="text-md font-semibold text-gray-800">{value}</p>
+  <div className="group relative bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-emerald-200 dark:hover:border-emerald-800">
+
+    <p className="text-xs tracking-wider uppercase text-gray-400 font-semibold mb-3">
+      {title}
+    </p>
+
+    <p className="text-base font-semibold text-gray-900 dark:text-white break-words leading-relaxed group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300">
+      {value}
+    </p>
+
   </div>
 );
 
 const AppointmentCard: React.FC<{ appointment: Appointment }> = ({ appointment }) => (
-    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
-        <div>
-            <p className="font-semibold text-emerald-700">{appointment.reason}</p>
-            <p className="text-sm text-gray-600">{appointment.doctor}</p>
-        </div>
-        <div className="text-left">
-            <p className="text-sm font-medium text-gray-800">{new Date(appointment.date).toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            <p className="text-sm text-gray-500">{appointment.time}</p>
-        </div>
+  <div className="flex flex-col sm:flex-row justify-between gap-5 p-6 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-sm hover:shadow-xl hover:border-emerald-200 dark:hover:border-emerald-800 transition-all duration-300">
+
+    <div className="space-y-2">
+      <p className="font-bold text-emerald-700 dark:text-emerald-400">
+        {appointment.reason}
+      </p>
+
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        {appointment.doctor}
+      </p>
     </div>
+
+    <div className="text-sm text-left text-gray-600 dark:text-gray-300 space-y-1">
+      <p className="font-medium">
+        {new Date(appointment.date).toLocaleDateString('ar-EG', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}
+      </p>
+
+      <p className="font-semibold">{appointment.time}</p>
+    </div>
+
+  </div>
 );
 
+const SummaryTab: React.FC<{
+  patient?: any;
+  appointments?: Appointment[];
+  medicalRecord?: MedicalRecord | null;
+  currentUserId?: string;
+}> = ({
+  patient,
+  appointments = [],
+  medicalRecord,
+  currentUserId
+}) => {
 
-const SummaryTab: React.FC<SummaryTabProps> = ({ patient, appointments = [], medicalRecord, currentUserId }) => {
   const [editing, setEditing] = useState(false);
+
   const [bloodType, setBloodType] = useState(medicalRecord?.bloodType || '');
   const [allergies, setAllergies] = useState((medicalRecord?.allergies || []).join(', '));
   const [currentMedicines, setCurrentMedicines] = useState((medicalRecord?.currentMedicines || []).join(', '));
   const [pastSurgeries, setPastSurgeries] = useState((medicalRecord?.pastSurgeries || []).join(', '));
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSave = async () => {
+
     if (!currentUserId) {
       setError('المستخدم غير معرف. الرجاء تسجيل الدخول.');
       return;
     }
+
     setSaving(true);
     setError(null);
+
     try {
       await updateMedicalRecord(currentUserId, {
         bloodType,
@@ -54,72 +91,124 @@ const SummaryTab: React.FC<SummaryTabProps> = ({ patient, appointments = [], med
         currentMedicines: currentMedicines.split(',').map(s => s.trim()).filter(Boolean),
         pastSurgeries: pastSurgeries.split(',').map(s => s.trim()).filter(Boolean),
       });
+
       setEditing(false);
+
     } catch (e: any) {
       setError(e.message || 'حدث خطأ أثناء الحفظ');
+
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-12 animate-fadeIn">
+
+      {/* Patient Information */}
       {patient && (
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">معلومات المريض</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <section className="space-y-6">
+
+          <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            معلومات المريض
+          </h2>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <InfoCard title="الطبيب الأساسي" value={patient.primaryPhysician} />
             <InfoCard title="شركة التأمين" value={patient.insuranceProvider} />
             <InfoCard title="معرّف المريض" value={patient.id} />
           </div>
-        </div>
+
+        </section>
       )}
 
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">المواعيد القادمة</h3>
-        <div className="space-y-3">
-          {appointments.length > 0 ? (
-            appointments.map(app => <AppointmentCard key={app.id} appointment={app} />)
-          ) : (
-            <p className="text-gray-500">لا توجد مواعيد قادمة.</p>
-          )}
-        </div>
-      </div>
+      {/* Upcoming Appointments */}
+      <section className="space-y-6">
 
-      <div>
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">السجلات الطبية</h3>
-          <div>
+        <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+          المواعيد القادمة
+        </h2>
+
+        <div className="space-y-4">
+
+          {appointments.length > 0 ? (
+            appointments.map(app => (
+              <AppointmentCard key={app.id} appointment={app} />
+            ))
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              لا توجد مواعيد قادمة.
+            </p>
+          )}
+
+        </div>
+
+      </section>
+
+      {/* Medical Records */}
+      <section className="space-y-6">
+
+        <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
+
+          <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            السجلات الطبية
+          </h2>
+
+          <div className="flex flex-wrap gap-3">
+
             {editing ? (
               <>
-                <button onClick={handleSave} disabled={saving} className="ml-2 px-3 py-1 bg-emerald-600 text-white rounded">{saving ? 'جارٍ الحفظ...' : 'حفظ'}</button>
-                <button onClick={() => setEditing(false)} disabled={saving} className="ml-2 px-3 py-1 bg-gray-200 rounded">إلغاء</button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-md transition"
+                >
+                  {saving ? 'جارٍ الحفظ...' : 'حفظ التغييرات'}
+                </button>
+
+                <button
+                  onClick={() => setEditing(false)}
+                  disabled={saving}
+                  className="px-6 py-3 rounded-2xl bg-gray-200 dark:bg-gray-700 dark:text-white text-sm font-medium transition"
+                >
+                  إلغاء
+                </button>
               </>
             ) : (
-              <button onClick={() => setEditing(true)} className="px-3 py-1 bg-emerald-600 text-white rounded">تعديل</button>
+              <button
+                onClick={() => setEditing(true)}
+                className="px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-md transition"
+              >
+                تعديل السجلات
+              </button>
             )}
+
           </div>
+
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-6">
+
           {editing ? (
             <>
-              <div>
-                <p className="text-sm text-gray-500">فصيلة الدم</p>
-                <input value={bloodType} onChange={e => setBloodType(e.target.value)} className="mt-1 w-full rounded border-gray-300 p-2" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">الحساسيات (مفصولة بفواصل)</p>
-                <input value={allergies} onChange={e => setAllergies(e.target.value)} className="mt-1 w-full rounded border-gray-300 p-2" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">الأدوية الحالية (مفصولة بفواصل)</p>
-                <input value={currentMedicines} onChange={e => setCurrentMedicines(e.target.value)} className="mt-1 w-full rounded border-gray-300 p-2" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">العمليات الجراحية (مفصولة بفواصل)</p>
-                <input value={pastSurgeries} onChange={e => setPastSurgeries(e.target.value)} className="mt-1 w-full rounded border-gray-300 p-2" />
-              </div>
+              {[
+                { label: 'فصيلة الدم', value: bloodType, setter: setBloodType },
+                { label: 'الحساسيات (مفصولة بفواصل)', value: allergies, setter: setAllergies },
+                { label: 'الأدوية الحالية (مفصولة بفواصل)', value: currentMedicines, setter: setCurrentMedicines },
+                { label: 'العمليات الجراحية (مفصولة بفواصل)', value: pastSurgeries, setter: setPastSurgeries }
+              ].map((field, index) => (
+                <div key={index} className="space-y-2">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {field.label}
+                  </p>
+
+                  <input
+                    value={field.value}
+                    onChange={e => field.setter(e.target.value)}
+                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition"
+                  />
+                </div>
+              ))}
             </>
           ) : (
             <>
@@ -129,9 +218,17 @@ const SummaryTab: React.FC<SummaryTabProps> = ({ patient, appointments = [], med
               <InfoCard title="العمليات الجراحية" value={(medicalRecord?.pastSurgeries || []).join(', ') || 'لا توجد'} />
             </>
           )}
+
         </div>
-        {error && <p className="mt-2 text-red-600">{error}</p>}
-      </div>
+
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-400">
+            {error}
+          </p>
+        )}
+
+      </section>
+
     </div>
   );
 };

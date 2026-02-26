@@ -1,223 +1,287 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bell, User, LogOut, Menu, Sun, Moon } from 'lucide-react';
+
 import PatientDashboard from './components/PatientDashboard';
 import PatientProfile from './components/PatientProfile';
 import HomePage from './components/HomePage';
 import DevicesPage from './components/DevicesPage';
 import ContactPage from './components/ContactPage';
+import AuthPage from './components/AuthPage';
+import SOSPage from './components/SOSPage';
+import StorePage from './components/StorePage';
+
 import { mockPatients } from './constants';
 import type { Patient } from './types';
+import type { User as AppUser, MedicalRecord } from './types';
+
 import { auth, firebaseAuth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import AuthPage from './components/AuthPage';
-import type { User as AppUser, MedicalRecord } from './types';
-import SOSPage from './components/SOSPage';
 import { getMedicalRecord } from './firebase';
 
-// 📌 استيراد اللوجو PNG من المسار الصحيح
-import LogoImage from './images/logos.png';
+import logo from './images/logos.png';
 
-type View = 'home' | 'dashboard' | 'profile' | 'devices' | 'contact' | 'auth' | 'sos';
+type View =
+  | 'home'
+  | 'dashboard'
+  | 'profile'
+  | 'devices'
+  | 'contact'
+  | 'auth'
+  | 'sos'
+  | 'store';
 
 const App: React.FC = () => {
+
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [curUser, setCurUser] = useState<AppUser | null>(null);
   const [medicalRecord, setMedicalRecord] = useState<MedicalRecord | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
+  const [avatarMenu, setAvatarMenu] = useState(false);
 
   const selectedPatient = selectedPatientId
-    ? mockPatients.find(p => p.id === selectedPatientId)
+    ? mockPatients.find((p) => p.id === selectedPatientId)
     : null;
-
-  const handleSelectPatient = (patient: Patient) => {
-    setSelectedPatientId(patient.id);
-    setCurrentView('profile');
-  };
-
-  const handleBackToDashboard = () => {
-    setSelectedPatientId(null);
-    setCurrentView('dashboard');
-  };
 
   const navigateTo = (view: View) => {
     setCurrentView(view);
-    setIsOpen(false);
+    setMobileMenuOpen(false);
+    setAvatarMenu(false);
   };
 
+  /* ⭐ Dark Mode Persistence Fix */
   useEffect(() => {
+
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark") {
+      setDarkMode(true);
+      document.documentElement.classList.add("dark");
+    }
+
+  }, []);
+
+  useEffect(() => {
+
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+
+  }, [darkMode]);
+
+  useEffect(() => {
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+
       if (user) {
-        setCurUser({ uid: user.uid, name: user.displayName || '', email: user.email || '' });
+
+        setCurUser({
+          uid: user.uid,
+          name: user.displayName || '',
+          email: user.email || '',
+        });
+
         const userDoc = await firebaseAuth.getUserDoc(user.uid);
+
         if (userDoc) {
-          setCurUser((prev) => ({ ...(prev as AppUser), ...userDoc } as AppUser));
+          setCurUser((prev) => ({
+            ...(prev as AppUser),
+            ...userDoc,
+          }));
         }
+
         const mr = await getMedicalRecord(user.uid);
+
         if (mr) setMedicalRecord(mr as MedicalRecord);
+
       } else {
         setCurUser(null);
         setMedicalRecord(null);
       }
+
     });
+
     return () => unsubscribe();
-  }, []);
 
-  useEffect(() => {
-    const onScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  const handleAboutClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigateTo('home');
-    setTimeout(() => {
-      document.getElementById('about-us')?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-  };
 
   const renderContent = () => {
+
     switch (currentView) {
+
       case 'auth':
-        return <AuthPage onLoginSuccess={(u) => { setCurUser(u); navigateTo('dashboard'); }} />;
+        return <AuthPage onLoginSuccess={(u)=>{setCurUser(u);navigateTo('dashboard');}} />;
+
       case 'sos':
         return <SOSPage />;
+
+      case 'store':
+        return <StorePage />;
+
       case 'profile':
-        if (selectedPatient) {
-          return <PatientProfile patient={selectedPatient} onBack={handleBackToDashboard} medicalRecord={medicalRecord} />;
-        }
-        if (curUser) {
-          return <PatientProfile patient={null as any} onBack={handleBackToDashboard} medicalRecord={medicalRecord} currentUserId={curUser.uid} />;
-        }
-        return <PatientDashboard onSelectPatient={handleSelectPatient} onOpenMyRecord={() => navigateTo('profile')} />;
+        return (
+          <PatientProfile
+            patient={selectedPatient as any}
+            onBack={()=>navigateTo('dashboard')}
+            medicalRecord={medicalRecord}
+            currentUserId={curUser?.uid}
+          />
+        );
+
       case 'dashboard':
-        return <PatientDashboard onSelectPatient={handleSelectPatient} onOpenMyRecord={() => navigateTo('profile')} />;
+        return (
+          <PatientDashboard
+            onSelectPatient={(patient: Patient)=>{
+              setSelectedPatientId(patient.id);
+              navigateTo('profile');
+            }}
+            onOpenMyRecord={()=>navigateTo('profile')}
+          />
+        );
+
       case 'devices':
         return <DevicesPage />;
+
       case 'contact':
         return <ContactPage />;
+
+      case 'home':
       default:
-        return <HomePage onNavigateToDashboard={() => navigateTo('dashboard')} />;
+        return <HomePage onNavigateToDashboard={()=>navigateTo('dashboard')} />;
     }
   };
 
-  const NavButton = ({ view, label }: { view: View; label: string }) => (
-    <button
-      onClick={() => navigateTo(view)}
-      className={`relative font-medium transition-all duration-200
-        ${currentView === view
-          ? 'text-emerald-500 dark:text-emerald-400'
-          : 'text-gray-600 hover:text-emerald-500 dark:text-gray-300 dark:hover:text-emerald-400'
-        }`}
-    >
-      {label}
-      {currentView === view && (
-        <span className="absolute -bottom-1 right-0 w-full h-[2px] bg-emerald-500 dark:bg-emerald-400 rounded"></span>
-      )}
-    </button>
-  );
+  const navButton =
+    "relative px-3 py-2 text-sm font-medium transition-all duration-300 hover:text-emerald-500 dark:hover:text-emerald-400 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-500 hover:after:w-full after:transition-all";
 
   return (
-    <div className={`${darkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-800'} min-h-screen transition-colors duration-500`}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-500">
 
-      {/* Navbar */}
-      <header
-        className={`sticky top-0 z-50 border-b transition-all duration-300
-          ${scrollY > 20
-            ? 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 shadow-lg'
-            : 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md'
-          }`}
-      >
-        <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+      <header className="sticky top-0 z-50">
+        <div className="backdrop-blur-2xl bg-white/70 dark:bg-gray-800/70 border-b border-white/20 shadow-xl">
 
-            {/* Logo */}
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); navigateTo('home'); }}
-              className="flex items-center gap-2 group"
+          <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+
+            <div
+              onClick={()=>navigateTo('home')}
+              className="flex items-center gap-4 cursor-pointer group"
             >
-              <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-800 group-hover:scale-105 transition">
-                <img src={LogoImage} alt="ثانية" className="h-6 w-6 object-contain" />
-              </div>
-              <span className="text-2xl font-extrabold tracking-tight">
+              <motion.div
+                whileHover={{ scale: 1.08 }}
+                className="w-12 h-12 rounded-2xl overflow-hidden bg-white dark:bg-gray-700 shadow-lg flex items-center justify-center"
+              >
+                <img src={logo} className="w-10 h-10 object-contain" />
+              </motion.div>
+
+              <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                 ثانية
               </span>
-            </a>
+            </div>
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center gap-8">
-              <NavButton view="dashboard" label="لوحة التحكم" />
-              <NavButton view="devices" label="الأجهزة" />
-              <NavButton view="sos" label="الطوارئ" />
-              <button onClick={handleAboutClick} className="text-gray-600 dark:text-gray-300 hover:text-emerald-500 dark:hover:text-emerald-400 font-medium">عنّا</button>
-              <NavButton view="contact" label="اتصل بنا" />
+            <div className="hidden lg:flex items-center gap-6 text-gray-600 dark:text-gray-300">
+
+              <button onClick={()=>navigateTo('dashboard')} className={navButton}>لوحة التحكم</button>
+              <button onClick={()=>navigateTo('devices')} className={navButton}>الأجهزة</button>
+              <button onClick={()=>navigateTo('sos')} className={navButton}>الطوارئ</button>
+              <button onClick={()=>navigateTo('store')} className={navButton}>المتجر</button>
+              <button className={navButton}>عنّا</button>
+              <button onClick={()=>navigateTo('contact')} className={navButton}>اتصل بنا</button>
 
               <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="px-3 py-1 rounded-lg border border-gray-400 dark:border-gray-600 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+                onClick={()=>setDarkMode(prev => !prev)}
+                className="p-2 rounded-xl bg-gray-200 dark:bg-gray-700 hover:scale-105 transition"
               >
-                {darkMode ? '☀️' : '🌙'}
+                {darkMode ? <Sun size={18}/> : <Moon size={18}/>}
               </button>
 
+              <Bell className="cursor-pointer hover:text-emerald-500 transition" size={20}/>
+
               {curUser ? (
-                <button
-                  onClick={() => { firebaseAuth.signout(); setCurUser(null); navigateTo('home'); }}
-                  className="px-5 py-2 text-sm font-semibold text-emerald-800 bg-yellow-400 rounded-xl hover:bg-yellow-500 hover:shadow-md transition-all duration-300"
-                >
-                  تسجيل الخروج
-                </button>
+
+                <div className="relative">
+
+                  <button
+                    onClick={()=>setAvatarMenu(!avatarMenu)}
+                    className="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center text-white"
+                  >
+                    <User size={18}/>
+                  </button>
+
+                  <AnimatePresence>
+                    {avatarMenu && (
+                      <motion.div
+                        initial={{ opacity:0, y:10 }}
+                        animate={{ opacity:1, y:0 }}
+                        exit={{ opacity:0, y:10 }}
+                        className="absolute left-0 mt-3 w-48 bg-white dark:bg-gray-800 shadow-xl rounded-xl p-3 flex flex-col gap-2"
+                      >
+                        <button
+                          onClick={()=>{
+                            firebaseAuth.signout();
+                            setCurUser(null);
+                            navigateTo('home');
+                          }}
+                          className="flex items-center gap-2 hover:text-red-500"
+                        >
+                          <LogOut size={16}/> تسجيل الخروج
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                </div>
+
               ) : (
+
                 <button
-                  onClick={() => navigateTo('auth')}
-                  className="px-5 py-2 text-sm font-semibold text-emerald-800 bg-yellow-400 rounded-xl hover:bg-yellow-500 hover:shadow-md transition-all duration-300"
+                  onClick={()=>navigateTo('auth')}
+                  className="px-5 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-emerald-900 font-semibold shadow-md transition"
                 >
                   تسجيل الدخول
                 </button>
               )}
+
             </div>
 
-            {/* Mobile Button */}
             <button
-              className="md:hidden flex flex-col justify-center items-center w-8 h-8 relative"
-              onClick={() => setIsOpen(!isOpen)}
+              className="lg:hidden"
+              onClick={()=>setMobileMenuOpen(!mobileMenuOpen)}
             >
-              <span className={`bg-emerald-700 dark:bg-emerald-400 h-[2px] w-6 absolute transition-all duration-300 ${isOpen ? 'rotate-45' : '-translate-y-2'}`} />
-              <span className={`bg-emerald-700 dark:bg-emerald-400 h-[2px] w-6 absolute transition-all duration-300 ${isOpen ? 'opacity-0' : ''}`} />
-              <span className={`bg-emerald-700 dark:bg-emerald-400 h-[2px] w-6 absolute transition-all duration-300 ${isOpen ? '-rotate-45' : 'translate-y-2'}`} />
+              <Menu size={28}/>
             </button>
 
           </div>
 
-          {/* Mobile Menu */}
-          <div className={`md:hidden overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
-            <div className="flex flex-col gap-4 pb-4 border-t border-gray-100 dark:border-gray-700 pt-4">
-              <NavButton view="dashboard" label="لوحة التحكم" />
-              <NavButton view="devices" label="الأجهزة" />
-              <NavButton view="sos" label="الطوارئ" />
-              <NavButton view="contact" label="اتصل بنا" />
-              <button onClick={() => setDarkMode(!darkMode)} className="px-3 py-1 rounded-lg border border-gray-400 dark:border-gray-600 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                {darkMode ? '☀️' : '🌙'}
-              </button>
-            </div>
-          </div>
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ height:0, opacity:0 }}
+                animate={{ height:'auto', opacity:1 }}
+                exit={{ height:0, opacity:0 }}
+                className="lg:hidden px-6 pb-6 flex flex-col gap-4 text-gray-600 dark:text-gray-300 overflow-hidden"
+              >
+                <button onClick={()=>navigateTo('dashboard')}>لوحة التحكم</button>
+                <button onClick={()=>navigateTo('devices')}>الأجهزة</button>
+                <button onClick={()=>navigateTo('sos')}>الطوارئ</button>
+                <button onClick={()=>navigateTo('store')}>المتجر</button>
+                <button onClick={()=>navigateTo('contact')}>اتصل بنا</button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        </nav>
+        </div>
       </header>
 
-      {/* Main */}
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="container mx-auto p-5 lg:p-10">
         {renderContent()}
       </main>
-
-      {/* Footer */}
-      <footer className="text-center py-6 mt-12 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          &copy; {new Date().getFullYear()} ثانية الصحية. جميع الحقوق محفوظة.
-        </p>
-      </footer>
 
     </div>
   );
