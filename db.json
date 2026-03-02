@@ -15,16 +15,25 @@
       "description": "يراقب معدل ضربات القلب وضغط الدم",
       "price": 950,
       "currency": "EGP",
-      "image_url": "/images/WhatsApp Image 2025-10-10 at 7.47.26 AM.png",
+      "image_url": "/images/WhatsApp Image 2025-10-10 at 7.47.26 AM (2).png",
       "in_stock": false
     },
-        {
+    {
       "id": "p3",
       "title": "جهاز تتبع ذكي V2",
       "description": "جهاز مقاوم للماء مع بطارية تدوم 30 يومًا",
       "price": 1500,
       "currency": "EGP",
       "image_url": "/images/band.png",
+      "in_stock": false
+    },
+    {
+      "id": "p2",
+      "title": "سوار طبي ذكي",
+      "description": "يراقب معدل ضربات القلب وضغط الدم",
+      "price": 950,
+      "currency": "EGP",
+      "image_url": "/images/WhatsApp Image 2025-10-10 at 7.47.26 AM (2).png",
       "in_stock": true
     }
   ],
@@ -44,18 +53,19 @@
       "details": "تم الضغط على زر SOS، جاري التواصل مع العائلة"
     },
     {
-        "id": "alert_101",
-        "device_name": "ساعة الجدة",
-        "time": "2026-02-15 10:40 PM",
-        "resolved": true,
+      "id": "alert_101",
+      "device_name": "ساعة الجدة",
+      "time": "2026-02-15 10:40 PM",
+      "resolved": true,
       "details": "تم التواصل مع العائلة"
     },
     {
-        "id": "alert_102",
-        "device_name": "ساعة الخالة",
-        "time": "2026-02-15 10:40 PM",
-        "resolved": false,
-        "details": "تم الضغط على زر SOS، جاري التواصل مع العائلة "
+      "id": "alert_102",
+      "device_name": "ساعة الخالة",
+      "time": "2026-02-15 10:40 PM",
+      "resolved": false,
+      "details": "تم الضغط على زر SOS، جاري التواصل مع العائلة "
     }
-  ]
+  ],
+  "orders": []
 }

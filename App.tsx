@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, User, LogOut, Menu, Sun, Moon } from 'lucide-react';
-
 import PatientDashboard from './components/PatientDashboard';
 import PatientProfile from './components/PatientProfile';
 import HomePage from './components/HomePage';
@@ -10,11 +9,9 @@ import ContactPage from './components/ContactPage';
 import AuthPage from './components/AuthPage';
 import SOSPage from './components/SOSPage';
 import StorePage from './components/StorePage';
-
 import { mockPatients } from './constants';
 import type { Patient } from './types';
 import type { User as AppUser, MedicalRecord } from './types';
-
 import { auth, firebaseAuth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getMedicalRecord } from './firebase';

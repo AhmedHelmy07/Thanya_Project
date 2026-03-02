@@ -54,6 +54,39 @@ server.post("/api/sos/alert", (req, res) => {
     message: "SOS alert created successfully",
   });
 });
+/* ===========================
+   STORE ORDER (POST)
+=========================== */
+server.post("/api/orders", (req, res) => {
+  const db = router.db;
+
+  const cartItems = req.body;
+
+  if (!cartItems || cartItems.length === 0) {
+    return res.status(400).json({
+      status: "error",
+      message: "Cart is empty",
+    });
+  }
+
+  const newOrder = {
+    id: `order_${Date.now()}`,
+    items: cartItems,
+    totalPrice: cartItems.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    ),
+    createdAt: new Date().toLocaleString(),
+  };
+
+  db.get("orders").push(newOrder).write();
+
+  res.status(201).json({
+    status: "success",
+    message: "Order created successfully",
+    order: newOrder,
+  });
+});
 
 server.use(router);
 

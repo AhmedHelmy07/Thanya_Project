@@ -3,12 +3,7 @@ import { useApiGet } from "../hook/Apis hooks/useApi";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingScreen from "./LoadingScreen";
 import ErrorScreen from "./ErrorScreen";
-import {
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Activity
-} from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, Activity } from "lucide-react";
 
 interface Alert {
   id: string;
@@ -20,8 +15,7 @@ interface Alert {
 
 const SOSPage: React.FC = () => {
 
-  const { data, isLoading, isError, error } =
-    useApiGet("/sos/history", {}, ["sosHistory"]);
+  const { data, isLoading, isError, error } =useApiGet("/sos/history", {}, ["sosHistory"]);
 
   const alertsList = data?.history ?? [];
 
@@ -36,7 +30,6 @@ const SOSPage: React.FC = () => {
 
       <div className="max-w-7xl mx-auto space-y-14">
 
-        {/* Header */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-3 bg-emerald-50 dark:bg-emerald-900/20 px-5 py-2 rounded-full">
             <Activity className="text-emerald-600 w-5 h-5" />
@@ -56,7 +49,6 @@ const SOSPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Empty State */}
         <AnimatePresence>
           {alertsList.length === 0 && (
             <motion.div
@@ -107,14 +99,12 @@ const SOSPage: React.FC = () => {
                 `}
               >
 
-                {/* Pulse Indicator */}
                 <span className={`
                   absolute top-5 right-5 w-3 h-3 rounded-full animate-pulse
 
                   ${item.resolved ? "bg-green-500" : "bg-red-500"}
                 `} />
 
-                {/* Header Row */}
                 <div className="flex items-start gap-4 mb-5">
 
                   {item.resolved ? (
@@ -135,12 +125,10 @@ const SOSPage: React.FC = () => {
 
                 </div>
 
-                {/* Details */}
                 <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
                   {item.details}
                 </p>
 
-                {/* Status Badge */}
                 <div className="mt-6">
                   <span className={`
                     inline-block text-xs font-semibold px-5 py-2 rounded-full transition
