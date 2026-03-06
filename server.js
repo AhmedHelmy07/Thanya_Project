@@ -8,15 +8,27 @@ server.use(middlewares);
 server.use(jsonServer.bodyParser);
 
 /* ===========================
-   STORE ENDPOINT
+   PRODUCTS ENDPOINT
 =========================== */
 server.get("/api/products", (req, res) => {
-  const db = router.db; 
-  const products = db.get("products").value();
+  const products = router.db.get("products").value();
 
   res.json({
     status: "success",
-    products: products,
+    products
+  });
+});
+
+/* ===========================
+   DEVICES ENDPOINT
+=========================== */
+server.get("/api/devices", (req, res) => {
+  const devices = router.db.get("devices").value();
+
+  res.json({
+    status: "success",
+    count: devices.length,
+    data: devices
   });
 });
 
@@ -24,12 +36,54 @@ server.get("/api/products", (req, res) => {
    SOS HISTORY
 =========================== */
 server.get("/api/sos/history", (req, res) => {
-  const db = router.db;
-  const history = db.get("history").value();
+  const history = router.db.get("history").value();
 
   res.json({
     status: "success",
-    history: history,
+    history
+  });
+});
+
+/* ===========================
+   AUTH LOGIN
+=========================== */
+server.post("/api/auth/login", (req, res) => {
+  const db = router.db;
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({
+      status: "error",
+      message: "Email and password are required"
+    });
+  }
+
+  const user = db
+    .get("users")
+    .find({ email, password })
+    .value();
+
+  if (!user) {
+    return res.status(401).json({
+      status: "error",
+      message: "Invalid email or password"
+    });
+  }
+
+  const fakeToken = "eyJhbGciOiJIUzI1Ni...";
+
+  res.json({
+    status: "success",
+    data: {
+      token: fakeToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        last_login: user.last_login
+      }
+    }
   });
 });
 
@@ -44,28 +98,28 @@ server.post("/api/sos/alert", (req, res) => {
     device_name: "جهاز المستخدم",
     time: new Date().toLocaleString(),
     resolved: false,
-    details: "تم إرسال تنبيه طوارئ جديد",
+    details: "تم إرسال تنبيه طوارئ جديد"
   };
 
   db.get("history").push(newAlert).write();
 
   res.status(201).json({
     status: "success",
-    message: "SOS alert created successfully",
+    message: "SOS alert created successfully"
   });
 });
+
 /* ===========================
-   STORE ORDER (POST)
+   STORE ORDERS (POST)
 =========================== */
 server.post("/api/orders", (req, res) => {
   const db = router.db;
-
   const cartItems = req.body;
 
   if (!cartItems || cartItems.length === 0) {
     return res.status(400).json({
       status: "error",
-      message: "Cart is empty",
+      message: "Cart is empty"
     });
   }
 
@@ -76,7 +130,7 @@ server.post("/api/orders", (req, res) => {
       (total, item) => total + item.price * item.quantity,
       0
     ),
-    createdAt: new Date().toLocaleString(),
+    createdAt: new Date().toLocaleString()
   };
 
   db.get("orders").push(newOrder).write();
@@ -84,11 +138,11 @@ server.post("/api/orders", (req, res) => {
   res.status(201).json({
     status: "success",
     message: "Order created successfully",
-    order: newOrder,
+    order: newOrder
   });
 });
 
-server.use(router);
+server.use("/api", router);
 
 server.listen(3001, () => {
   console.log("Fake API running on http://localhost:3001");

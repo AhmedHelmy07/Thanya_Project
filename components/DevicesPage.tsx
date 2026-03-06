@@ -1,17 +1,20 @@
 import React from 'react';
+import { useApiGet } from "../hook/Apis hooks/useApi";
 import type { Device } from '../types';
-import { mockDevices } from '../constants';
 import { DeviceIcon, ClockIcon } from './icons';
+import LoadingScreen from './LoadingScreen';
+import ErrorScreen from './ErrorScreen';
 
 /* ===========================
-   Device Card - Pro Version
+   Device Card
 =========================== */
 
 const DeviceCard: React.FC<{ device: Device }> = ({ device }) => {
   const isConnected = device.status === 'متصل';
 
   return (
-    <div className="
+    <div
+      className="
       relative
       bg-white/80 backdrop-blur-sm
       border border-gray-200/60
@@ -21,8 +24,8 @@ const DeviceCard: React.FC<{ device: Device }> = ({ device }) => {
       transition-all duration-300
       overflow-hidden
       flex flex-col
-    ">
-
+    "
+    >
       {/* Top Accent Bar */}
       <div
         className={`h-1 w-full ${
@@ -63,7 +66,6 @@ const DeviceCard: React.FC<{ device: Device }> = ({ device }) => {
                 className={`
                   inline-flex items-center px-4 py-1.5
                   text-xs font-semibold rounded-full
-                  transition-all
                   ${
                     isConnected
                       ? 'bg-emerald-50 text-emerald-700'
@@ -116,10 +118,19 @@ const DeviceCard: React.FC<{ device: Device }> = ({ device }) => {
 };
 
 /* ===========================
-   Devices Page - Premium UI
+   Devices Page
 =========================== */
 
 const DevicesPage: React.FC = () => {
+
+  const { data, isLoading, isError, error } = useApiGet(
+    "/devices",
+    {},
+    ["devices"]
+  );
+  const devices = data?.data ?? [];
+  if (isLoading) return <LoadingScreen />;
+  if (isError) return <ErrorScreen message={error?.message || "حدث خطأ أثناء تحميل الأجهزة."} />;
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 md:p-10">
 
@@ -158,20 +169,22 @@ const DevicesPage: React.FC = () => {
         </div>
 
         {/* Grid */}
-        {mockDevices.length > 0 ? (
+        {devices && devices?.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-10">
-            {mockDevices.map(device => (
+            {devices.map((device: Device) => (
               <DeviceCard key={device.id} device={device} />
             ))}
           </div>
         ) : (
-          <div className="
-            text-center py-20
-            bg-white
-            rounded-3xl
-            border border-dashed border-gray-300
-            shadow-sm
-          ">
+          <div
+            className="
+              text-center py-20
+              bg-white
+              rounded-3xl
+              border border-dashed border-gray-300
+              shadow-sm
+            "
+          >
             <h3 className="text-xl font-semibold text-gray-800">
               لا يوجد أجهزة متصلة
             </h3>

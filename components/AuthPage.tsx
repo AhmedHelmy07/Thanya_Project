@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { firebaseAuth, createUserProfile, createMedicalRecord } from '../firebase';
 import { User } from '../types';
+import { useApiGet } from "../hook/Apis hooks/useApi";
 
 interface AuthPageProps {
   onLoginSuccess?: (user: User) => void;
@@ -21,6 +22,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
   const [weight, setWeight] = useState('');
 
   const [error, setError] = useState<string | null>(null);
+
+  // ✅ إضافة الـ API Hook
+  const { data, isLoading, isError, error: apiError } = useApiGet("/auth");
 
   const toggle = () => {
     setError(null);

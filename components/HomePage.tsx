@@ -17,9 +17,9 @@ const MedicalLoader = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-white">
 
       {/* Logo */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <ThanyaLogoWide className="h-16 opacity-90" />
-      </div>
+      </div> */}
 
       {/* Image Container Premium Style */}
       <div className="mb-8 p-5 rounded-3xl bg-emerald-50/40 backdrop-blur-md shadow-md">
