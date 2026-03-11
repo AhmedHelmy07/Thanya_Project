@@ -9,6 +9,7 @@ import ContactPage from './components/ContactPage';
 import AuthPage from './components/AuthPage';
 import SOSPage from './components/SOSPage';
 import StorePage from './components/StorePage';
+import AboutSection from "./components/AboutSection";
 import { mockPatients } from './constants';
 import type { Patient } from './types';
 import type { User as AppUser, MedicalRecord } from './types';
@@ -18,15 +19,7 @@ import { getMedicalRecord } from './firebase';
 
 import logo from './images/logos.png';
 
-type View =
-  | 'home'
-  | 'dashboard'
-  | 'profile'
-  | 'devices'
-  | 'contact'
-  | 'auth'
-  | 'sos'
-  | 'store';
+type View = | 'home' | 'dashboard' | 'profile' | 'devices'| 'contact' | 'auth' |'about'| 'sos' | 'store';
 
 const App: React.FC = () => {
 
@@ -121,7 +114,8 @@ const App: React.FC = () => {
 
       case 'store':
         return <StorePage />;
-
+      case 'about':
+        return <AboutSection />;
       case 'profile':
         return (
           <PatientProfile
@@ -148,7 +142,7 @@ const App: React.FC = () => {
 
       case 'contact':
         return <ContactPage />;
-
+      
       case 'home':
       default:
         return <HomePage onNavigateToDashboard={()=>navigateTo('dashboard')} />;
@@ -188,7 +182,7 @@ const App: React.FC = () => {
               <button onClick={()=>navigateTo('devices')} className={navButton}>الأجهزة</button>
               <button onClick={()=>navigateTo('sos')} className={navButton}>الطوارئ</button>
               <button onClick={()=>navigateTo('store')} className={navButton}>المتجر</button>
-              <button className={navButton}>عنّا</button>
+              <button onClick={()=>navigateTo('about')} className={navButton}>عن ثانية</button>
               <button onClick={()=>navigateTo('contact')} className={navButton}>اتصل بنا</button>
 
               <button
@@ -297,8 +291,8 @@ const App: React.FC = () => {
         المتجر
       </button>
 
-      <button onClick={() => navigateTo("home")}>
-        عنّا
+      <button onClick={() => navigateTo("about")}>
+        عن ثانية
       </button>
 
       <button onClick={() => navigateTo("contact")}>

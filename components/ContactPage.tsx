@@ -1,185 +1,151 @@
 import React, { useState } from 'react';
-import { MessageIcon, PhoneIcon, EmailIcon, UserIcon, CheckCircleIcon } from './icons';
+import { motion } from 'framer-motion';
+import { MessageIcon, UserIcon, EmailIcon, CheckCircleIcon } from './icons';
 
 const ContactPage: React.FC = () => {
+  const [formData, setFormData] = useState({name: '', email: '', subject: '', message: '' });
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        subject: '',
-        message: ''
-    });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-    const [isSubmitted, setIsSubmitted] = useState(false);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Form submitted:", formData);
+    setIsSubmitted(true);
+    setFormData({ name: '', email: '', subject: '', message: '' });
+  };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+  return (
+    <section className="relative min-h-screen py-20 px-6 lg:px-20 bg-gradient-to-r from-emerald-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-hidden">
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+      <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-200/20 rounded-full blur-3xl animate-blob"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-300/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
 
-        console.log("Form submitted:", formData);
-
-        setIsSubmitted(true);
-
-        setFormData({
-            name: '',
-            email: '',
-            subject: '',
-            message: ''
-        });
-    };
-
-    return (
-        <div className="animate-fadeIn min-h-screen flex items-center justify-center p-6">
-
-            <div className="w-full max-w-6xl space-y-14">
-
-                {/* Header */}
-                <div className="text-center space-y-5">
-
-                    <div className="inline-flex justify-center items-center w-24 h-24 rounded-3xl bg-emerald-50 dark:bg-emerald-900/30 shadow-xl">
-                        <MessageIcon className="h-12 w-12 text-emerald-600" />
-                    </div>
-
-                    <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                        تواصل معنا
-                    </h1>
-
-                    <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                        نحن هنا لمساعدتك في أي استفسار. ارسل رسالتك وسنقوم بالرد عليك في أقرب وقت.
-                    </p>
-
-                </div>
-
-                {/* Form Card */}
-                <div className="relative">
-
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-gray-900 rounded-3xl blur-3xl opacity-60"></div>
-
-                    <div className="relative backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-2xl p-10 transition-all duration-500 hover:shadow-3xl">
-
-                        {isSubmitted ? (
-
-                            <div className="text-center space-y-7 py-16">
-
-                                <CheckCircleIcon className="h-24 w-24 mx-auto text-emerald-500 animate-pulse" />
-
-                                <div className="space-y-3">
-                                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                        شكرًا لك!
-                                    </h3>
-
-                                    <p className="text-gray-500 dark:text-gray-400 text-lg">
-                                        تم استلام رسالتك بنجاح وسنرد عليك قريبًا.
-                                    </p>
-                                </div>
-
-                                <button
-                                    onClick={() => setIsSubmitted(false)}
-                                    className="px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xl hover:shadow-emerald-400/40 transition-all duration-300 hover:scale-105"
-                                >
-                                    إرسال رسالة أخرى
-                                </button>
-
-                            </div>
-
-                        ) : (
-
-                            <form onSubmit={handleSubmit} className="space-y-9">
-
-                                <div className="grid md:grid-cols-2 gap-8">
-
-                                    {[
-                                        { label: "الاسم الكامل", name: "name", type: "text", icon: UserIcon },
-                                        { label: "البريد الإلكتروني", name: "email", type: "email", icon: EmailIcon }
-                                    ].map((field, index) => {
-
-                                        const Icon = field.icon;
-
-                                        return (
-                                            <div key={index} className="space-y-3 group">
-
-                                                <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                                                    {field.label}
-                                                </label>
-
-                                                <div className="relative">
-
-                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-5 text-gray-400 group-focus-within:text-emerald-500 transition">
-                                                        <Icon className="h-5 w-5" />
-                                                    </div>
-
-                                                    <input
-                                                        type={field.type}
-                                                        name={field.name}
-                                                        required
-                                                        value={(formData as any)[field.name]}
-                                                        onChange={handleChange}
-                                                        className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 pr-14 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300"
-                                                    />
-
-                                                </div>
-
-                                            </div>
-                                        );
-                                    })}
-
-                                </div>
-
-                                <div className="space-y-3">
-
-                                    <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                                        الموضوع
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        name="subject"
-                                        required
-                                        value={formData.subject}
-                                        onChange={handleChange}
-                                        className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300"
-                                    />
-
-                                </div>
-
-                                <div className="space-y-3">
-
-                                    <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
-                                        رسالتك
-                                    </label>
-
-                                    <textarea
-                                        name="message"
-                                        rows={6}
-                                        required
-                                        value={formData.message}
-                                        onChange={handleChange}
-                                        className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300 resize-none"
-                                    />
-
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    className="w-full py-5 rounded-2xl text-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xl hover:shadow-emerald-400/30 transition-all duration-300 hover:scale-[1.01]"
-                                >
-                                    إرسال الرسالة
-                                </button>
-
-                            </form>
-
-                        )}
-
-                    </div>
-                </div>
-
-            </div>
+      <motion.div 
+        className="relative max-w-6xl mx-auto space-y-16"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      >
+        <div className="text-center space-y-5">
+          <div className="inline-flex justify-center items-center w-28 h-28 rounded-3xl bg-emerald-50 dark:bg-emerald-900/30 shadow-xl">
+            <MessageIcon className="h-12 w-12 text-emerald-600" />
+          </div>
+          <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            تواصل معنا
+          </h1>
+          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+            نحن هنا لمساعدتك في أي استفسار. ارسل رسالتك وسنقوم بالرد عليك في أقرب وقت.
+          </p>
         </div>
-    );
+
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-gray-900 rounded-3xl blur-3xl opacity-60"></div>
+
+          <motion.div 
+            className="relative backdrop-blur-xl bg-white/90 dark:bg-gray-800/90 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10 w-full max-w-4xl mx-auto transition-all duration-500 hover:shadow-3xl"
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            {isSubmitted ? (
+              <div className="text-center space-y-7 py-16">
+                <CheckCircleIcon className="h-24 w-24 mx-auto text-emerald-500 animate-pulse" />
+                <div className="space-y-3">
+                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white">شكرًا لك!</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-lg">
+                    تم استلام رسالتك بنجاح وسنرد عليك قريبًا.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsSubmitted(false)}
+                  className="px-8 py-4 rounded-xl text-lg font-bold text-emerald-900 bg-gradient-to-r from-emerald-400 to-emerald-50 hover:from-emerald-300 hover:to-emerald-100 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 mx-auto block" >
+                  تواصل مع ثانية مرة أخرى
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-9">
+                
+                <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 sm:gap-4">
+                  {[
+                            
+                    { label: "الاسم الكامل", name: "name", type: "text", icon: UserIcon , placeholder : "Ex:John Doe" },
+                    { label: "البريد الإلكتروني", name: "email", type: "email", icon: EmailIcon , placeholder : "name@example.com" }
+                  ].map((field, index) => {
+                    const Icon = field.icon;
+                    return (
+                      <div key={index} className="space-y-3">
+                        <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">{field.label}</label>
+                        <div className="relative group">
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-5 text-gray-400 group-focus-within:text-emerald-500 transition">
+                            <Icon className="h-5 w-5"/>
+                          </div>
+                          <input
+                            type={field.type}
+                            name={field.name}
+                            placeholder = {field.placeholder}
+                            required
+                            value={(formData as any)[field.name]}
+                            onChange={handleChange}
+                           className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 pr-14 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_15px_-3px_rgba(16,185,129,0.3),0_4px_6px_-2px_rgba(16,185,129,0.2)]"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">الموضوع</label>
+                  <input
+                    type="text"
+                    name="subject"
+                    required
+                    value={formData.subject}
+                    onChange={handleChange}
+                    placeholder="موضوع رسالتك"
+                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 pr-14 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_15px_-3px_rgba(16,185,129,0.3),0_4px_6px_-2px_rgba(16,185,129,0.2)]"
+
+                  />
+                </div>
+                <div className="space-y-3 relative">
+                  <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                    رسالتك لثانية
+                  </label>
+                  <textarea
+                    name="message"
+                    rows={6}
+                    required
+                    value={formData.message}
+                    onChange={handleChange}
+                    placeholder="اكتب رسالتك هنا..."
+                    className="w-full min-h-[160px] rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 text-sm 
+                      focus:ring-2 focus:ring-emerald-500 focus:shadow-[0_10px_15px_-3px_rgba(16,185,129,0.3),0_4px_6px_-2px_rgba(16,185,129,0.2)] 
+                      outline-none transition-all duration-300 resize-none 
+                      bg-[url('/images/logos.png')] bg-no-repeat bg-center bg-[length:180px] opacity-70 
+                      hover:scale-[1.01] hover:shadow-[0_10px_15px_-3px_rgba(16,185,129,0.3),0_4px_6px_-2px_rgba(16,185,129,0.2)]"
+                    style={{ filter: "blur(0.5px)" }}
+                  />
+                </div>
+
+                <div className="flex justify-end mt-6">
+                  <button
+                    type="submit"
+                    className="px-8 py-4 rounded-xl text-lg font-bold text-emerald-900 bg-gradient-to-r from-emerald-400 to-emerald-50 hover:from-emerald-300 hover:to-emerald-100 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
+                    تواصل مع ثانية
+                  </button>
+                </div>
+
+              </form>
+            )}
+          </motion.div>
+        </div>
+      </motion.div>
+    </section>
+  );
 };
 
 export default ContactPage;
