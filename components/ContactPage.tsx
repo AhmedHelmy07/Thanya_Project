@@ -125,7 +125,7 @@ const ContactPage: React.FC = () => {
                     className="w-full min-h-[160px] rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 text-sm dark:text-white
                       focus:ring-2 focus:ring-emerald-500 focus:shadow-[0_10px_15px_-3px_rgba(16,185,129,0.3),0_4px_6px_-2px_rgba(16,185,129,0.2)] 
                       outline-none transition-all duration-300 resize-none 
-                      bg-[url('/public/images/logos.png')] bg-no-repeat bg-center bg-[length:180px] opacity-70 
+                      bg-[url('/images/logos.png')] bg-no-repeat bg-center bg-[length:180px] opacity-70 
                       hover:scale-[1.01] hover:shadow-[0_10px_15px_-3px_rgba(16,185,129,0.3),0_4px_6px_-2px_rgba(16,185,129,0.2)]"
                     style={{ filter: "blur(0.5px)" }}
                   />

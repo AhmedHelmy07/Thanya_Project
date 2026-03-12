@@ -1,6 +1,6 @@
 import React from 'react';
-import logo from '/public/images/logo.png';
-import logoWide from '/public/images/logo_wide.png';
+import logo from '/images/logo.png';
+import logoWide from '/images/logo_wide.png';
 
 // NOTE: Using image tags to point to physical logo files as requested.
 // The paths are now absolute from the public root folder.

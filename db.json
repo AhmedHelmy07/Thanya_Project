@@ -6,7 +6,7 @@
       "description": "جهاز مقاوم للماء مع بطارية تدوم 30 يومًا",
       "price": 1500,
       "currency": "EGP",
-      "image_url": "/public/images/band.png",
+      "image_url": "/images/band.png",
       "in_stock": true
     },
     {
@@ -15,7 +15,7 @@
       "description": "يراقب معدل ضربات القلب وضغط الدم",
       "price": 950,
       "currency": "EGP",
-      "image_url": "/public/images/WhatsApp Image 2025-10-10 at 7.47.26 AM (2).png",
+      "image_url": "/images/WhatsApp Image 2025-10-10 at 7.47.26 AM (2).png",
       "in_stock": false
     }
   ],
