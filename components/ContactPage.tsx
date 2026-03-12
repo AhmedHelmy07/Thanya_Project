@@ -19,7 +19,7 @@ const ContactPage: React.FC = () => {
   };
 
   return (
-    <section className="relative min-h-screen py-20 px-6 lg:px-20 bg-gradient-to-r from-emerald-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-hidden">
+    <section className="relative min-h-screen py-20 px-6 lg:px-20 bg-gradient-to-r from-emerald-50 to-white dark:from-gray-900 dark:to-gray-800 overflow-hidden rounded-3xl">
 
       <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-200/20 rounded-full blur-3xl animate-blob"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-300/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
@@ -90,7 +90,7 @@ const ContactPage: React.FC = () => {
                             required
                             value={(formData as any)[field.name]}
                             onChange={handleChange}
-                           className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 pr-14 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_15px_-3px_rgba(16,185,129,0.3),0_4px_6px_-2px_rgba(16,185,129,0.2)]"
+                           className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 pr-14 text-sm dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_15px_-3px_rgba(16,185,129,0.3),0_4px_6px_-2px_rgba(16,185,129,0.2)]"
                           />
                         </div>
                       </div>
@@ -107,7 +107,7 @@ const ContactPage: React.FC = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     placeholder="موضوع رسالتك"
-                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 pr-14 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_15px_-3px_rgba(16,185,129,0.3),0_4px_6px_-2px_rgba(16,185,129,0.2)]"
+                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 pr-14 text-sm dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_10px_15px_-3px_rgba(16,185,129,0.3),0_4px_6px_-2px_rgba(16,185,129,0.2)]"
 
                   />
                 </div>
@@ -122,7 +122,7 @@ const ContactPage: React.FC = () => {
                     value={formData.message}
                     onChange={handleChange}
                     placeholder="اكتب رسالتك هنا..."
-                    className="w-full min-h-[160px] rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 text-sm 
+                    className="w-full min-h-[160px] rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 text-sm dark:text-white
                       focus:ring-2 focus:ring-emerald-500 focus:shadow-[0_10px_15px_-3px_rgba(16,185,129,0.3),0_4px_6px_-2px_rgba(16,185,129,0.2)] 
                       outline-none transition-all duration-300 resize-none 
                       bg-[url('/images/logos.png')] bg-no-repeat bg-center bg-[length:180px] opacity-70 
