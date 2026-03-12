@@ -17,7 +17,7 @@ import { auth, firebaseAuth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getMedicalRecord } from './firebase';
 
-import logo from './images/logos.png';
+import logo from '/public/images/logos.png';
 
 type View = | 'home' | 'dashboard' | 'profile' | 'devices'| 'contact' | 'auth' |'about'| 'sos' | 'store';
 
