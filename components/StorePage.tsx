@@ -79,7 +79,7 @@ const StorePage: React.FC = () => {
     0
   );
   const checkout = () => {
-    orderMutation.mutate(  {path: "/api/orders",
+    orderMutation.mutate(  {path: "/orders",
       data: cart},
       {
       onSuccess: () => {
