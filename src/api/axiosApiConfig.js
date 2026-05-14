@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = "http://thanyaproject.runasp.net/api";
+const baseURL = "https://thanyaproject.runasp.net/api";
 
 const api = axios.create({ baseURL });
 
