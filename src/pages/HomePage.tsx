@@ -6,6 +6,7 @@ import {
   MedicationIcon,
   VitalsIcon,
 } from "../components/atoms/icons";
+import { useAuth } from "@/context/AuthContext";
 
 const MedicalLoader = () => {
   return (
@@ -63,7 +64,7 @@ const ExperienceCard = ({ title, description, color }: any) => (
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-
+  const { user } = useAuth();
   useEffect(() => {
     setTimeout(() => setLoading(false), 1200);
   }, []);
@@ -82,13 +83,21 @@ const HomePage: React.FC = () => {
             تطبيق ثانية يمنحك وصولاً فورياً لسجلاتك الطبية ويشاركها عند الطوارئ
             لضمان أفضل رعاية في أسرع وقت ممكن.
           </p>
-
-          <button
-            onClick={() => navigate('/auth')}
-            className="px-11 py-4 text-lg font-semibold text-white bg-emerald-600 rounded-xl shadow-lg hover:bg-emerald-700 transition-all duration-300 hover:scale-[1.03]"
-          >
-            إنشاء حساب مجاني
-          </button>
+          {user ? (
+            <button
+              onClick={() => navigate('/store')}
+              className="px-11 py-4 text-lg font-semibold text-white bg-emerald-600 rounded-xl shadow-lg hover:bg-emerald-700 transition-all duration-300 hover:scale-[1.03]"
+            >
+              اذهب إلى المتجر
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/auth')}
+              className="px-11 py-4 text-lg font-semibold text-white bg-emerald-600 rounded-xl shadow-lg hover:bg-emerald-700 transition-all duration-300 hover:scale-[1.03]"
+            >
+              إنشاء حساب مجاني
+            </button>
+          )}
         </section>
 
         <section>
