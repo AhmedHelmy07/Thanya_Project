@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import LoadingScreen from "../components/atoms/LoadingScreen";
 import ErrorScreen from "../components/atoms/ErrorScreen";
 import { AlertTriangle, CheckCircle, Clock, Activity } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface Alert {
   id: string;
@@ -14,8 +15,10 @@ interface Alert {
 }
 
 const SOSPage: React.FC = () => {
+    const { user } = useAuth();
+  
 
-  const { data, isLoading, isError, error } = useApiGet("/sos/history", {}, ["sosHistory"]);
+  const { data, isLoading, isError, error } = useApiGet("/sos/history", {}, ["sosHistory", user?.id],  !!user);
 
   const alertsList = data?.history ?? [];
 

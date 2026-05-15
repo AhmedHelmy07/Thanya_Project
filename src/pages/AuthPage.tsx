@@ -5,6 +5,7 @@ import { useApiPost, useApiPut } from '../hooks/Apis hooks/useApi';
 import ErrorScreen from "../components/atoms/ErrorScreen";
 import LoadingScreen from "../components/atoms/LoadingScreen";
 import { useAuth } from '../context/AuthContext';
+import { SiSession } from 'react-icons/si';
 /* ─── Types ─── */
 type Mode = 'login' | 'register1' | 'register2';
 
@@ -84,10 +85,10 @@ const StepDot: React.FC<{ active: boolean; done: boolean; label: string }> = ({
   <div className="flex flex-col items-center gap-1">
     <div
       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${done
-          ? 'bg-emerald-500 text-white'
-          : active
-            ? 'bg-emerald-600 text-white ring-4 ring-emerald-200'
-            : 'bg-gray-200 dark:bg-gray-700 text-gray-400'
+        ? 'bg-emerald-500 text-white'
+        : active
+          ? 'bg-emerald-600 text-white ring-4 ring-emerald-200'
+          : 'bg-gray-200 dark:bg-gray-700 text-gray-400'
         }`}
     >
       {done ? '✓' : active ? '●' : '○'}
@@ -102,7 +103,7 @@ const StepDot: React.FC<{ active: boolean; done: boolean; label: string }> = ({
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setUser } = useAuth();
+  const { user, setUser , setIsLoggingOut} = useAuth();
   const from = (location.state as any)?.from?.pathname || '/dashboard';
 
   const [mode, setMode] = useState<Mode>('login');
@@ -111,7 +112,6 @@ const AuthPage: React.FC = () => {
   /* Login state */
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-
   /* Register step 1 */
   const [basic, setBasic] = useState<BasicForm>({
     firstName: '',
@@ -160,8 +160,12 @@ const AuthPage: React.FC = () => {
       },
       {
         onSuccess: (data: any) => {
-          setUser(data?.user ?? data);
+          const id = data?.data?.user?.id
+          sessionStorage.setItem('id', id);
+          setUser(data?.data?.user ?? data);
+          setIsLoggingOut(false); 
           navigate(from, { replace: true });
+         
         },
         onError: () => {
           setError('بيانات تسجيل الدخول غير صحيحة');
@@ -220,7 +224,10 @@ const AuthPage: React.FC = () => {
       },
       {
         onSuccess: (data: any) => {
-          setUser(data?.user ?? data);
+          const id = data?.data?.user?.id
+          sessionStorage.setItem('id', id);
+          setUser(data?.data?.user ?? data);
+          setIsLoggingOut(false);
           navigate('/dashboard', { replace: true }); // أو احذفي step2 لو مش محتاجاه
         },
         onError: (err: any) => {
@@ -249,12 +256,12 @@ const AuthPage: React.FC = () => {
   };
 
   const handleSkip = () => {
-      registerMutation.mutate(
+    registerMutation.mutate(
       {
         path: '/Account/Register',
         data: {
           ...basic,
-          bloodType: medical?.bloodType ?? null ,
+          bloodType: medical?.bloodType ?? null,
           chronicDiseases: medical?.chronicDiseases ?? null,
           allergies: medical?.allergies ?? null,
           currentMedication: medical?.currentMedication ?? null,
@@ -263,7 +270,10 @@ const AuthPage: React.FC = () => {
       },
       {
         onSuccess: (data: any) => {
-          setUser(data?.user ?? data);
+          const id = data?.data?.user?.id
+          sessionStorage.setItem('id', id);
+          setUser(data?.data?.user ?? data);
+          setIsLoggingOut(false);
           navigate('/dashboard', { replace: true }); // أو احذفي step2 لو مش محتاجاه
         },
         onError: (err: any) => {
@@ -425,14 +435,14 @@ const AuthPage: React.FC = () => {
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-5 ">
-                 
+
                   <SelectField
                     label="فصيلة الدم"
                     value={medical.bloodType}
                     onChange={setM('bloodType')}
                     options={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((b) => ({ label: b, value: b }))}
-                   />
-                  
+                  />
+
                   {/* <SelectField
                     label="الحالة الصحية"
                     value={medical.status}

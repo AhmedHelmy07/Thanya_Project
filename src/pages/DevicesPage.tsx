@@ -3,6 +3,7 @@ import { useApiGet } from "../hooks/Apis hooks/useApi";
 import { DeviceIcon, ClockIcon } from "../components/atoms/icons";
 import LoadingScreen from "../components/atoms/LoadingScreen";
 import ErrorScreen from "../components/atoms/ErrorScreen";
+import { useAuth } from "@/context/AuthContext";
 
 /* ===========================
    TYPE FIX (مهم جدًا)
@@ -137,10 +138,12 @@ const DeviceCard: React.FC<{ device: ApiDevice }> = ({ device }) => {
 =========================== */
 
 const DevicesPage: React.FC = () => {
+    const { user } = useAuth();
+  
   const { data, isLoading, isError, error } = useApiGet(
     "/Devices/GETDevices",
     {},
-    ["devices"]
+    ["devices", user?.id], !!user
   );
 
   const devices: ApiDevice[] = data?.data ?? [];

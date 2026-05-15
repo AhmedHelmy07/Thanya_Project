@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost, apiPut, apiDelete } from '../../api/axiosApiConfig';
 
-export const useApiGet = (path, params, queryKey) => {
+export const useApiGet = (path, params, queryKey, enabled = true) => {
     const queryFn = () => apiGet(path, params);
     return useQuery({
         queryKey,
         queryFn,
-        enabled: !!(path)
+        enabled: !!(path) && enabled
     });
 }
 
@@ -28,7 +28,8 @@ export const useApiPost = (queryKey, onSuccessFn = () => { }, useReturnedDataOnS
 
 export const useApiPut = (queryKey, onSuccessFn = () => { }, onErrorFn = () => { }) => {
     const queryClient = useQueryClient();
-    const mutationFn = (sentData) => apiPut(sentData.path, sentData.data, sentData.params);
+    const mutationFn = (sentData) =>
+        apiPut(sentData.path, sentData.data ?? {});
     return useMutation({
         mutationFn,
         onSuccess: (returnedData, sentData) => {
@@ -44,7 +45,8 @@ export const useApiPut = (queryKey, onSuccessFn = () => { }, onErrorFn = () => {
 
 export const useApiDelete = (queryKey, onSuccessFn = () => { }, onErrorFn = () => { }) => {
     const queryClient = useQueryClient();
-    const mutationFn = (data) => apiDelete(data.path, data.data, data.params);
+    const mutationFn = (sentData) =>
+        apiDelete(sentData.path, sentData.data ?? {});
     return useMutation({
         mutationFn,
         onSuccess: (returnedData, sentData) => {

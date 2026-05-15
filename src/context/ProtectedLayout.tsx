@@ -14,9 +14,9 @@ const ProtectedLayout = () => {
   }
 
   // لو مفيش user يرجعه للوجين
-  if (!user) {
-    return <Navigate to="/auth" state={{ from: location }} replace />;
-  }
+  // if (!user) {
+  //   return <Navigate to="/auth" state={{ from: location }} replace />;
+  // }
 
   // لو عامل login افتح الصفحات
   return <Outlet />;

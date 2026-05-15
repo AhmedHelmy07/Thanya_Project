@@ -23,7 +23,8 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { setUser, user } = useAuth();
+  const { setUser, user, logout , isloggingOut } = useAuth();
+
   const logoutMutation = useApiPost(['logout']);
 
 
@@ -84,7 +85,7 @@ const Navbar: React.FC = () => {
           ))}
 
           {/* Protected Links */}
-          {user &&
+          {(user && !isloggingOut) && 
             protectedLinks.map((link) => (
               <button
                 key={link.path}
@@ -144,13 +145,11 @@ const Navbar: React.FC = () => {
                           },
                           {
                             onSuccess: () => {
-                              localStorage.removeItem('token');
-                              setUser(null);
+                              logout();
                               navigate('/auth');
                             },
                             onError: () => {
-                              localStorage.removeItem('token');
-                              setUser(null);
+                              logout();
                               navigate('/auth');
                             },
                           }
@@ -207,7 +206,7 @@ const Navbar: React.FC = () => {
             ))}
 
             {/* Protected Links */}
-            {user &&
+            {((user && !isloggingOut)) &&
               protectedLinks.map((link) => (
                 <button
                   key={link.path}
@@ -236,13 +235,13 @@ const Navbar: React.FC = () => {
                     },
                     {
                       onSuccess: () => {
-                        localStorage.removeItem('token');
-                        setUser(null);
+                        
+                        logout();
                         navigate('/auth');
                       },
                       onError: () => {
-                        localStorage.removeItem('token');
-                        setUser(null);
+                        
+                        logout();
                         navigate('/auth');
                       },
                     }

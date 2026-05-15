@@ -5,6 +5,7 @@ import ErrorBoundary from './components/atoms/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter } from 'react-router-dom';
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,9 @@ root.render(
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ThemeProvider>
-            <App />
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
           </ThemeProvider>
         </AuthProvider>
       </QueryClientProvider>

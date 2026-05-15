@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApiGet, useApiPost } from '../hooks/Apis hooks/useApi';
+import { useApiGet, useApiPost, useApiPut, useApiDelete } from '../hooks/Apis hooks/useApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiEye, FiX, FiShoppingCart, FiPlus, FiMinus, FiTrash2 } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import LoadingScreen from '../components/atoms/LoadingScreen';
 import ErrorScreen from '../components/atoms/ErrorScreen';
+import { useQueryClient } from '@tanstack/react-query';
+
 
 interface Product {
-  id: string;
+  id: number;
   title: string;
   description: string;
   price: number;
@@ -22,36 +24,61 @@ interface CartItem extends Product {
 }
 
 type ToastType = { message: string; type: 'success' | 'error' | 'warning' };
-
+const getNumericId = (id: string) => {
+  return Number(id.replace('p', ''));
+};
 const StorePage: React.FC = () => {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user } = useAuth();
-
+  console.log('user : ', user)
   // جلب المنتجات
-  const { data, isLoading, isError, error } = useApiGet('/Store/products', {}, ['products']);
-  const productsList: Product[] = data?.products ?? [];
+  const { data, isLoading, isError, error } = useApiGet('/Store/products', {}, ['products', user?.id]);
+  const productsList: Product[] =
+    data?.products?.map((p: any) => ({
+      id: getNumericId(p.id),
+      title: p.title,
+      description: p.description,
+      price: p.price,
+      currency: p.currency,
+      imageUrl: p.imageUrl,
+      inStock: p.inStock,
+    })) ?? [];
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
-  const [cart, setCart] = useState<CartItem[]>([]);
   const [toast, setToast] = useState<ToastType | null>(null);
 
-  // 1. Mutation لإضافة منتج للسلة في السيرفر
-  const addToCartMutation = useApiPost(
-    ['cart'],
-    () => {}, // سنعالج النجاح داخل استدعاء mutate نفسه
-    false,
-    () => showToast('فشل إضافة المنتج للسلة!', 'error')
-  );
+  const addToCartMutation = useApiPost(['cart'], () => { });
+  const updateCartMutation = useApiPut(['cart'], () => { });
+  const deleteItemMutation = useApiDelete(['cart'], () => {
+    showToast('تم حذف المنتج', 'success');
+  });
 
   // 2. Mutation لإتمام الطلب والحصول على رابط الدفع
   const orderMutation = useApiPost(
     ['orders'],
-    () => {}, 
+    () => { },
     false,
     () => showToast('حدث خطأ أثناء تسجيل الطلب!', 'error')
   );
-
+  const {
+    data: cartData,
+    isLoading: cartLoading,
+    refetch: refetchCart,
+  } = useApiGet('/Store/GetCatItem', {}, ['cart', user?.id], !!user);
+  const cart =
+    Array.isArray(cartData)
+      ? cartData.map((item: any) => ({
+        id: item.id,
+        productId: item.productId ?? item.id,
+        title: item.title,
+        price: item.price,
+        currency: item.currency,
+        imageUrl: item.imageUrl,
+        quantity: item.quantity,
+      }))
+      : [];
   const showToast = (message: string, type: ToastType['type']) => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4500);
@@ -60,75 +87,86 @@ const StorePage: React.FC = () => {
   /* ── Cart helpers ── */
   const addToCart = (product: Product) => {
     if (!user) {
-      showToast('يرجى تسجيل الدخول أولاً لإضافة المنتجات', 'warning');
+      showToast('يرجى تسجيل الدخول أولاً', 'warning');
       setTimeout(() => navigate('/auth'), 1200);
       return;
     }
 
-    if (!product.inStock) {
-      showToast('المنتج غير متوفر حالياً', 'error');
+    const exists = cart?.find((item: any) => item.productId === product.id);
+
+    if (exists) {
+      showToast('المنتج موجود بالفعل في السلة', 'warning');
       return;
     }
 
-    // إرسال طلب للسيرفر أولاً
-    addToCartMutation.mutate(
-      {
-        path: `/Store/AddToCart?productId=${product.id}&quantity=1`,
-        data: {}, // البيانات مرسلة في الـ URL (Query Params)
-      },
-      {
-        onSuccess: () => {
-          // إذا نجح السيرفر، نحدث الواجهة محلياً
-          if (cart.find((i) => i.id === product.id)) {
-            showToast('المنتج موجود بالفعل في السلة', 'warning');
-            return;
-          }
-          setCart((prev) => [...prev, { ...product, quantity: 1 }]);
-          showToast('تم إضافة المنتج إلى السلة بنجاح', 'success');
-        }
+    addToCartMutation.mutate({
+      path: `/Store/AddToCart?productId=${product.id}&quantity=1`,
+      data: {},
+    }, {
+      onSuccess: () => {
+        showToast('تم إضافة المنتج إلى السلة', 'success');
+        queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
       }
-    );
+    });
   };
+  const increase = (item: any) => {
+    updateCartMutation.mutate({
+      path: `/Store/cart/${item.productId}?quantity=${item.quantity + 1}`,
+      data: {}
+    }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
+      }
+    });
+  };
+  const decrease = (item: any) => {
+    if (item.quantity <= 1) {
+      removeItem(item.productId);
+      return;
+    }
 
-  const increase = (id: string) =>
-    setCart((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity: item.quantity + 1 } : item))
-    );
-
-  const decrease = (id: string) =>
-    setCart((prev) =>
-      prev
-        .map((item) => (item.id === id ? { ...item, quantity: item.quantity - 1 } : item))
-        .filter((item) => item.quantity > 0)
-    );
-
-  const removeItem = (id: string) =>
-    setCart((prev) => prev.filter((item) => item.id !== id));
-
-  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
+    updateCartMutation.mutate({
+      path: `/Store/cart/${item.productId}?quantity=${item.quantity - 1}`,
+      data: {}
+    }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
+      }
+    });
+  };
+  const removeItem = (productId: number) => {
+    deleteItemMutation.mutate({
+      path: `/Store/cart/${productId}`,
+      data: {}
+    }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
+      }
+    });
+  };
+  const totalPrice = cart.reduce(
+    (sum: number, item: any) => sum + item.price * item.quantity,
+    0
+  );
   const checkout = () => {
-    // إرسال طلب الدفع للسيرفر
     orderMutation.mutate(
       {
         path: '/Store/Checkout',
-        data: {}, // السيرفر غالباً يعرف السلة من الـ Token/Session
+        data: {},
       },
       {
-      onSuccess: (res: any) => {
-        const url = res?.sessionUrl || res?.data?.sessionUrl;
+        onSuccess: (res: any) => {
+          const url = res?.sessionUrl || res?.data?.sessionUrl;
+          refetchCart();
+          if (url) {
+            window.open(url, '_blank');
+          } else {
+            showToast("No checkout URL returned", "error");
+          }
 
-        if (url) {
-          window.location.assign(url);
-        } else {
-          showToast("No checkout URL returned", "error");
-        }
-
-        setCart([]);
-        setCartOpen(false);
-      },
+        },
         onError: () => {
-          showToast('حدث خطأ أثناء الانتقال لعملية الدفع!', 'error');
+          showToast('حدث خطأ أثناء الدفع!', 'error');
         }
       }
     );
@@ -170,11 +208,10 @@ const StorePage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -8, transition: { duration: 0.15 } }}
-              className={`bg-white/80 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ${
-                product.inStock
-                  ? 'hover:shadow-[0_15px_30px_-5px_rgba(16,185,129,0.35)]'
-                  : 'hover:shadow-[0_15px_30px_-5px_rgba(239,68,68,0.25)] opacity-75'
-              }`}
+              className={`bg-white/80 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ${product.inStock
+                ? 'hover:shadow-[0_15px_30px_-5px_rgba(16,185,129,0.35)]'
+                : 'hover:shadow-[0_15px_30px_-5px_rgba(239,68,68,0.25)] opacity-75'
+                }`}
             >
               {/* Image */}
               <div className="h-52 bg-white/80 dark:bg-gray-900/60 flex items-center justify-center p-4">
@@ -205,11 +242,10 @@ const StorePage: React.FC = () => {
                     <button
                       disabled={addToCartMutation.isPending}
                       onClick={() => addToCart(product)}
-                      className={`p-3 rounded-full text-white transition shadow-md ${
-                        product.inStock
-                          ? 'bg-emerald-600 hover:bg-emerald-700'
-                          : 'bg-gray-400 cursor-not-allowed'
-                      } ${addToCartMutation.isPending ? 'animate-pulse' : ''}`}
+                      className={`p-3 rounded-full text-white transition shadow-md ${product.inStock
+                        ? 'bg-emerald-600 hover:bg-emerald-700'
+                        : 'bg-gray-400 cursor-not-allowed'
+                        } ${addToCartMutation.isPending ? 'animate-pulse' : ''}`}
                     >
                       <FiShoppingCart />
                     </button>
@@ -308,7 +344,7 @@ const StorePage: React.FC = () => {
                 {cart.length === 0 ? (
                   <p className="text-gray-400 text-center py-10">السلة فارغة</p>
                 ) : (
-                  cart.map((item) => (
+                  cart.map((item: any) => (
                     <div key={item.id} className="flex gap-4 border-b border-gray-100 dark:border-gray-700 pb-4">
                       <div className="w-14 h-14 bg-white dark:bg-gray-700 rounded-xl flex items-center justify-center p-1 shadow">
                         <img src={item.imageUrl} alt={item.title} className="max-h-full object-contain" />
@@ -317,10 +353,10 @@ const StorePage: React.FC = () => {
                         <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">{item.title}</p>
                         <p className="text-xs text-gray-500">{item.price} {item.currency}</p>
                         <div className="flex items-center gap-2 mt-2">
-                          <button onClick={() => decrease(item.id)} className="p-1 bg-gray-100 dark:bg-gray-700 rounded-lg"><FiMinus size={12} /></button>
+                          <button onClick={() => decrease(item)} className="p-1 bg-gray-100 dark:bg-gray-700 rounded-lg"><FiMinus size={12} /></button>
                           <span className="text-sm text-gray-900 dark:text-gray-100">{item.quantity}</span>
-                          <button onClick={() => increase(item.id)} className="p-1 bg-gray-100 dark:bg-gray-700 rounded-lg"><FiPlus size={12} /></button>
-                          <button onClick={() => removeItem(item.id)} className="text-red-400 ml-auto"><FiTrash2 size={14} /></button>
+                          <button onClick={() => increase(item)} className="p-1 bg-gray-100 dark:bg-gray-700 rounded-lg"><FiPlus size={12} /></button>
+                          <button onClick={() => removeItem(item.productId)} className="text-red-400 ml-auto"><FiTrash2 size={14} /></button>
                         </div>
                       </div>
                       <span className="text-sm font-bold text-gray-800 dark:text-gray-200 self-center">
@@ -382,13 +418,12 @@ const StorePage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}
-            className={`fixed bottom-20 right-10 text-sm px-5 py-3 rounded-xl shadow-lg z-[60] font-medium ${
-              toast.type === 'success'
-                ? 'bg-emerald-600 text-white'
-                : toast.type === 'error'
+            className={`fixed bottom-20 right-10 text-sm px-5 py-3 rounded-xl shadow-lg z-[60] font-medium ${toast.type === 'success'
+              ? 'bg-emerald-600 text-white'
+              : toast.type === 'error'
                 ? 'bg-red-500 text-white'
                 : 'bg-yellow-400 text-yellow-900'
-            }`}
+              }`}
           >
             {toast.message}
           </motion.div>
@@ -397,5 +432,6 @@ const StorePage: React.FC = () => {
     </div>
   );
 };
+
 
 export default StorePage;
