@@ -466,21 +466,31 @@ const PatientDashboard = () => {
 
               {/* INPUTS */}
 
-              <input
+              <select
                 value={editData.bloodType}
                 onChange={(e) =>
                   setEditData({
                     ...editData,
-                    bloodType:
-                      e.target.value,
+                    bloodType: e.target.value,
                   })
                 }
-                placeholder="Blood Type"
                 className={`mb-3 w-full rounded-xl border p-3 ${dark
                   ? "border-gray-700 bg-gray-900 text-white"
                   : "border-gray-300 bg-white text-black"
                   }`}
-              />
+              >
+                <option value="" disabled>
+                  Select Blood Type
+                </option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
 
               <input
                 value={
@@ -493,7 +503,7 @@ const PatientDashboard = () => {
                       e.target.value,
                   })
                 }
-                placeholder="Chronic Diseases"
+                placeholder="الأمراض المزمنة"
                 className={`mb-3 w-full rounded-xl border p-3 ${dark
                   ? "border-gray-700 bg-gray-900 text-white"
                   : "border-gray-300 bg-white text-black"
@@ -509,7 +519,7 @@ const PatientDashboard = () => {
                       e.target.value,
                   })
                 }
-                placeholder="Allergies"
+                placeholder="الحساسية"
                 className={`mb-3 w-full rounded-xl border p-3 ${dark
                   ? "border-gray-700 bg-gray-900 text-white"
                   : "border-gray-300 bg-white text-black"
@@ -527,7 +537,7 @@ const PatientDashboard = () => {
                       e.target.value,
                   })
                 }
-                placeholder="Current Medication"
+                placeholder="الأدوية الحالية"
                 className={`mb-4 w-full rounded-xl border p-3 ${dark
                   ? "border-gray-700 bg-gray-900 text-white"
                   : "border-gray-300 bg-white text-black"

@@ -6,6 +6,7 @@ import ErrorScreen from "../components/atoms/ErrorScreen";
 import LoadingScreen from "../components/atoms/LoadingScreen";
 import { useAuth } from '../context/AuthContext';
 import { SiSession } from 'react-icons/si';
+import { Eye, EyeOff } from 'lucide-react';
 /* ─── Types ─── */
 type Mode = 'login' | 'register1' | 'register2';
 
@@ -36,7 +37,8 @@ const Field: React.FC<{
   onChange: (v: string) => void;
   placeholder?: string;
   required?: boolean;
-}> = ({ label, type = 'text', value, onChange, placeholder, required }) => (
+  error?: string | null;
+}> = ({ label, type = 'text', value, onChange, placeholder, required, error }) => (
   <div className="space-y-1.5">
     <label className="block text-sm font-semibold text-gray-600 dark:text-gray-300">
       {label}
@@ -47,10 +49,52 @@ const Field: React.FC<{
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       required={required}
-      className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-5 py-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all duration-300 hover:border-emerald-300 dark:text-white"
+      className={`w-full rounded-2xl border ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'} bg-white dark:bg-gray-800 px-5 py-4 text-sm outline-none transition-all duration-300 hover:border-emerald-300 dark:text-white focus:ring-2`}
     />
+    {error && <p className="text-xs text-red-500 font-medium pt-0.5">{error}</p>}
   </div>
 );
+
+/* ─── Password Field with show/hide toggle ─── */
+const PasswordField: React.FC<{
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  required?: boolean;
+  error?: string | null;
+}> = ({ label, value, onChange, placeholder, required, error }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-sm font-semibold text-gray-600 dark:text-gray-300">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          type={show ? 'text' : 'password'}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          required={required}
+          className={`w-full rounded-2xl border ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'} bg-white dark:bg-gray-800 px-5 py-4 pr-12 text-sm outline-none transition-all duration-300 hover:border-emerald-300 dark:text-white focus:ring-2`}
+        />
+        <button
+          type="button"
+          onClick={() => setShow((s) => !s)}
+          className="absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-emerald-600 transition-colors"
+          tabIndex={-1}
+          aria-label={show ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+        >
+          {show ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
+      </div>
+      {error && (
+        <p className="text-xs text-red-500 font-medium pt-0.5">{error}</p>
+      )}
+    </div>
+  );
+};
 
 /* ─── Select Field ─── */
 const SelectField: React.FC<{
@@ -103,11 +147,16 @@ const StepDot: React.FC<{ active: boolean; done: boolean; label: string }> = ({
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, setUser , setIsLoggingOut} = useAuth();
+  const { user, setUser, setIsLoggingOut } = useAuth();
   const from = (location.state as any)?.from?.pathname || '/dashboard';
 
-  const [mode, setMode] = useState<Mode>('login');
+  const initialMode = (location.state as any)?.mode || 'login';
+
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [error, setError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   /* Login state */
   const [loginEmail, setLoginEmail] = useState('');
@@ -163,9 +212,9 @@ const AuthPage: React.FC = () => {
           const id = data?.data?.user?.id
           sessionStorage.setItem('id', id);
           setUser(data?.data?.user ?? data);
-          setIsLoggingOut(false); 
+          setIsLoggingOut(false);
           navigate(from, { replace: true });
-         
+
         },
         onError: () => {
           setError('بيانات تسجيل الدخول غير صحيحة');
@@ -176,274 +225,309 @@ const AuthPage: React.FC = () => {
 
   const handleRegister1 = (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    // setUser(data?.user ?? data);
-    setMode('register2');
-    // registerMutation.mutate(
-    //   {
-    //     path: '/Account/Register',
-    //     data: {
-    //       ...basic,
-    //       bloodType: medical.bloodType,
-    //       chronicDiseases: medical.chronicDiseases,
-    //       allergies: medical.allergies,
-    //       currentMedication: medical.currentMedication,
-    //       status: medical.status,
-    //     },
-    //   },
-    //   {
-    //     onSuccess: (data: any) => {
-    //       setUser(data?.user ?? data);
-    //       setMode('register2'); // أو احذفي step2 لو مش محتاجاه
-    //     },
-    //     onError: (err: any) => {
-    //       console.log("REGISTER ERROR:", err?.response?.data || err);
-    //       setError(
-    //         err?.response?.data?.message ||
-    //         'حدث خطأ أثناء التسجيل، تحقق من البيانات'
-    //       );
-    //     }
-    //   }
-    // );
-  };
 
-  const handleRegister2 = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    registerMutation.mutate(
-      {
-        path: '/Account/Register',
-        data: {
-          ...basic,
-          bloodType: medical.bloodType,
-          chronicDiseases: medical.chronicDiseases,
-          allergies: medical.allergies,
-          currentMedication: medical.currentMedication,
-          status: medical.status,
-        },
+    let valid = true;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(basic.email)) {
+      setEmailError("البريد الإلكتروني غير صحيح");
+      valid = false;
+    } else {
+      setEmailError(null);
+    }
+
+    const phoneRegex = /^(\+20|0)?1[0-2,5]{1}[0-9]{8}$/;
+
+    if (!phoneRegex.test(basic.phoneNumber)) {
+      setPhoneError("رقم الهاتف غير صحيح");
+      valid = false;
+    } else {
+      setPhoneError(null);
+    }
+
+    const passwordRegex =
+      /^(?=.*\d).{9,}$/;
+
+    if (!passwordRegex.test(basic.password)) {
+      setPasswordError(
+        "كلمة المرور يجب أن تكون 9 أحرف على الأقل وتحتوي على رقم"
+      );
+      valid = false;
+    } else {
+      setPasswordError(null);
+    }
+
+    if (!valid) return;
+
+  
+
+  // setUser(data?.user ?? data);
+  setMode('register2');
+  // registerMutation.mutate(
+  //   {
+  //     path: '/Account/Register',
+  //     data: {
+  //       ...basic,
+  //       bloodType: medical.bloodType,
+  //       chronicDiseases: medical.chronicDiseases,
+  //       allergies: medical.allergies,
+  //       currentMedication: medical.currentMedication,
+  //       status: medical.status,
+  //     },
+  //   },
+  //   {
+  //     onSuccess: (data: any) => {
+  //       setUser(data?.user ?? data);
+  //       setMode('register2'); 
+  //     },
+  //     onError: (err: any) => {
+  //       console.log("REGISTER ERROR:", err?.response?.data || err);
+  //       setError(
+  //         err?.response?.data?.message ||
+  //         'حدث خطأ أثناء التسجيل، تحقق من البيانات'
+  //       );
+  //     }
+  //   }
+  // );
+};
+
+const handleRegister2 = (e: React.FormEvent) => {
+  e.preventDefault();
+  setError(null);
+  registerMutation.mutate(
+    {
+      path: '/Account/Register',
+      data: {
+        ...basic,
+        bloodType: medical.bloodType,
+        chronicDiseases: medical.chronicDiseases,
+        allergies: medical.allergies,
+        currentMedication: medical.currentMedication,
+        status: medical.status,
       },
-      {
-        onSuccess: (data: any) => {
-          const id = data?.data?.user?.id
-          sessionStorage.setItem('id', id);
-          setUser(data?.data?.user ?? data);
-          setIsLoggingOut(false);
-          navigate('/dashboard', { replace: true }); // أو احذفي step2 لو مش محتاجاه
-        },
-        onError: (err: any) => {
-          console.log("REGISTER ERROR:", err?.response?.data || err);
-          setError(
-            err?.response?.data?.message ||
-            'حدث خطأ أثناء التسجيل، تحقق من البيانات'
-          );
-        }
-      }
-    );
-    // medicalMutation.mutate(
-    //   {
-    //     path: '/Account/medical/update',
-    //     data: medical,
-    //   },
-    //   {
-    //     onSuccess: () => {
-    //       navigate('/dashboard', { replace: true });
-    //     },
-    //     onError: () => {
-    //       setError('حدث خطأ أثناء حفظ البيانات الطبية');
-    //     },
-    //   }
-    // );
-  };
-
-  const handleSkip = () => {
-    registerMutation.mutate(
-      {
-        path: '/Account/Register',
-        data: {
-          ...basic,
-          bloodType: medical?.bloodType ?? null,
-          chronicDiseases: medical?.chronicDiseases ?? null,
-          allergies: medical?.allergies ?? null,
-          currentMedication: medical?.currentMedication ?? null,
-          status: medical?.status ?? null,
-        },
+    },
+    {
+      onSuccess: (data: any) => {
+        const id = data?.data?.user?.id
+        sessionStorage.setItem('id', id);
+        setUser(data?.data?.user ?? data);
+        setIsLoggingOut(false);
+        navigate('/dashboard', { replace: true });
       },
-      {
-        onSuccess: (data: any) => {
-          const id = data?.data?.user?.id
-          sessionStorage.setItem('id', id);
-          setUser(data?.data?.user ?? data);
-          setIsLoggingOut(false);
-          navigate('/dashboard', { replace: true }); // أو احذفي step2 لو مش محتاجاه
-        },
-        onError: (err: any) => {
-          console.log("REGISTER ERROR:", err?.response?.data || err);
-          setError(
-            err?.response?.data?.message ||
-            'حدث خطأ أثناء التسجيل، تحقق من البيانات'
-          );
-        }
+      onError: (err: any) => {
+        console.log("REGISTER ERROR:", registerMutation.error);
+        setError(
+          err?.response?.data?.message ||
+          'حدث خطأ أثناء التسجيل، تحقق من البيانات'
+        );
       }
-    );
-  };
-  const isPending =
-    loginMutation.isPending || registerMutation.isPending || medicalMutation.isPending;
+    }
+  );
+  // medicalMutation.mutate(
+  //   {
+  //     path: '/Account/medical/update',
+  //     data: medical,
+  //   },
+  //   {
+  //     onSuccess: () => {
+  //       navigate('/dashboard', { replace: true });
+  //     },
+  //     onError: () => {
+  //       setError('حدث خطأ أثناء حفظ البيانات الطبية');
+  //     },
+  //   }
+  // );
+};
 
-  /* ── Animation variants ── */
-  const pageVariants = {
-    initial: { opacity: 0, x: 40 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -40 },
-  };
+const handleSkip = () => {
+  registerMutation.mutate(
+    {
+      path: '/Account/Register',
+      data: {
+        ...basic,
+        bloodType: medical?.bloodType ?? null,
+        chronicDiseases: medical?.chronicDiseases ?? null,
+        allergies: medical?.allergies ?? null,
+        currentMedication: medical?.currentMedication ?? null,
+        status: medical?.status ?? null,
+      },
+    },
+    {
+      onSuccess: (data: any) => {
+        const id = data?.data?.user?.id
+        sessionStorage.setItem('id', id);
+        setUser(data?.data?.user ?? data);
+        setIsLoggingOut(false);
+        navigate('/dashboard', { replace: true });
+      },
+      onError: (err: any) => {
+        console.log("REGISTER ERROR:", err?.response?.data || err);
+        setError(
+          err?.response?.data?.message ||
+          'حدث خطأ أثناء التسجيل، تحقق من البيانات'
+        );
+      }
+    }
+  );
+};
+const isPending =
+  loginMutation.isPending || registerMutation.isPending || medicalMutation.isPending;
 
-  return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-2xl relative">
+/* ── Animation variants ── */
+const pageVariants = {
+  initial: { opacity: 0, x: 40 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -40 },
+};
 
-        {/* Glow bg */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/40 to-teal-100/30 dark:from-emerald-900/30 dark:to-gray-900 rounded-3xl blur-3xl opacity-60" />
+return (
+  <div className="min-h-screen flex items-center justify-center p-6">
+    <div className="w-full max-w-2xl relative">
 
-        <div className="relative backdrop-blur-2xl bg-white/95 dark:bg-gray-800/95 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-2xl p-8 md:p-10">
+      {/* Glow bg */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/40 to-teal-100/30 dark:from-emerald-900/30 dark:to-gray-900 rounded-3xl blur-3xl opacity-60" />
 
-          {/* Steps indicator (register only) */}
-          {(mode === 'register1' || mode === 'register2') && (
-            <div className="flex items-center justify-center gap-6 mb-8">
-              <StepDot active={mode === 'register1'} done={mode === 'register2'} label="البيانات الأساسية" />
-              <div className="w-16 h-0.5 bg-gray-200 dark:bg-gray-700 rounded" />
-              <StepDot active={mode === 'register2'} done={false} label="السجل الطبي" />
-            </div>
+      <div className="relative backdrop-blur-2xl bg-white/95 dark:bg-gray-800/95 border border-gray-100 dark:border-gray-700 rounded-3xl shadow-2xl p-8 md:p-10">
+
+        {/* Steps indicator (register only) */}
+        {(mode === 'register1' || mode === 'register2') && (
+          <div className="flex items-center justify-center gap-6 mb-8">
+            <StepDot active={mode === 'register1'} done={mode === 'register2'} label="البيانات الأساسية" />
+            <div className="w-16 h-0.5 bg-gray-200 dark:bg-gray-700 rounded" />
+            <StepDot active={mode === 'register2'} done={false} label="السجل الطبي" />
+          </div>
+        )}
+
+        {/* Title */}
+        <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-900 dark:text-white tracking-tight mb-8">
+          {mode === 'login' && 'تسجيل الدخول'}
+          {mode === 'register1' && 'إنشاء حساب – الخطوة الأولى'}
+          {mode === 'register2' && 'البيانات الطبية'}
+        </h2>
+
+        <AnimatePresence mode="wait">
+
+          {/* ─── LOGIN ─── */}
+          {mode === 'login' && (
+            <motion.form
+              key="login"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+              onSubmit={handleLogin}
+              className="space-y-6"
+            >
+              <Field label="البريد الإلكتروني" type="email" value={loginEmail} onChange={setLoginEmail} placeholder=' example@example.com' required />
+              <PasswordField label="كلمة المرور" value={loginPassword} onChange={setLoginPassword} placeholder='Enter your password' required />
+              {/* <p className=' text-red-300 d-none '>خطأ في البريد الإلكتروني او كلمة المرور </p> */}
+              {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-lg font-bold shadow-xl transition-all duration-300 hover:scale-[1.01]"
+              >
+                {isPending ? 'جاري الدخول...' : 'تسجيل الدخول'}
+              </button>
+
+              <p className="text-center text-sm text-gray-500">
+                ليس لديك حساب؟{' '}
+                <button
+                  type="button"
+                  onClick={() => { setError(null); setMode('register1'); }}
+                  className="text-emerald-600 font-semibold underline hover:opacity-80"
+                >
+                  إنشاء حساب جديد
+                </button>
+              </p>
+            </motion.form>
           )}
 
-          {/* Title */}
-          <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-900 dark:text-white tracking-tight mb-8">
-            {mode === 'login' && 'تسجيل الدخول'}
-            {mode === 'register1' && 'إنشاء حساب – الخطوة الأولى'}
-            {mode === 'register2' && 'البيانات الطبية'}
-          </h2>
-
-          <AnimatePresence mode="wait">
-
-            {/* ─── LOGIN ─── */}
-            {mode === 'login' && (
-              <motion.form
-                key="login"
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.3 }}
-                onSubmit={handleLogin}
-                className="space-y-6"
-              >
-                <Field label="البريد الإلكتروني" type="email" value={loginEmail} onChange={setLoginEmail} required />
-                <Field label="كلمة المرور" type="password" value={loginPassword} onChange={setLoginPassword} required />
-
-                {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
-
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-lg font-bold shadow-xl transition-all duration-300 hover:scale-[1.01]"
-                >
-                  {isPending ? 'جاري الدخول...' : 'تسجيل الدخول'}
-                </button>
-
-                <p className="text-center text-sm text-gray-500">
-                  ليس لديك حساب؟{' '}
-                  <button
-                    type="button"
-                    onClick={() => { setError(null); setMode('register1'); }}
-                    className="text-emerald-600 font-semibold underline hover:opacity-80"
-                  >
-                    إنشاء حساب جديد
-                  </button>
-                </p>
-              </motion.form>
-            )}
-
-            {/* ─── REGISTER STEP 1 ─── */}
-            {mode === 'register1' && (
-              <motion.form
-                key="register1"
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.3 }}
-                onSubmit={handleRegister1}
-                className="space-y-5"
-              >
-                <div className="grid md:grid-cols-2 gap-5">
-                  <Field label="الاسم الأول" value={basic.firstName} onChange={setB('firstName')} required />
-                  <Field label="الاسم الأخير" value={basic.lastName} onChange={setB('lastName')} required />
-                  <Field label="البريد الإلكتروني" type="email" value={basic.email} onChange={setB('email')} required />
-                  <Field label="كلمة المرور" type="password" value={basic.password} onChange={setB('password')} required />
-                  <Field label="تاريخ الميلاد" type="date" value={basic.dateOfBirth} onChange={setB('dateOfBirth')} required />
-                  <Field label="رقم الهاتف" type="tel" value={basic.phoneNumber} onChange={setB('phoneNumber')} placeholder="+20..." required />
-                  <div className="md:col-span-2">
-                    <Field label="العنوان" value={basic.address} onChange={setB('address')} placeholder="المدينة، الشارع..." required />
-                  </div>
-                  <SelectField
-                    label="الجنس"
-                    value={basic.gender}
-                    onChange={setB('gender')}
-                    options={[
-                      { label: 'ذكر', value: 'male' },
-                      { label: 'أنثى', value: 'female' },
-                    ]}
-                  />
+          {/* ─── REGISTER STEP 1 ─── */}
+          {mode === 'register1' && (
+            <motion.form
+              key="register1"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+              onSubmit={handleRegister1}
+              className="space-y-5"
+            >
+              <div className="grid md:grid-cols-2 gap-5">
+                <Field label="الاسم الأول" value={basic.firstName} onChange={setB('firstName')} placeholder="أدخل الاسم الأول" required />
+                <Field label="الاسم الأخير" value={basic.lastName} onChange={setB('lastName')} placeholder="أدخل الاسم الأخير" required />
+                <Field label="البريد الإلكتروني" type="text" value={basic.email} onChange={(v) => { setB('email')(v); setEmailError(null); }} placeholder="example@example.com" required error={emailError} />
+                <PasswordField label="كلمة المرور" value={basic.password} onChange={(v) => { setB('password')(v); setPasswordError(null); }} placeholder=" 9 أحرف علي الأقل" required error={passwordError} />
+                <Field label="تاريخ الميلاد" type="date" value={basic.dateOfBirth} onChange={setB('dateOfBirth')} required />
+                <Field label="رقم الهاتف" type="tel" value={basic.phoneNumber} onChange={(v) => { setB('phoneNumber')(v); setPhoneError(null); }} placeholder="+20..." required error={phoneError} />
+                <div className="md:col-span-2">
+                  <Field label="العنوان" value={basic.address} onChange={setB('address')} placeholder="المدينة، الشارع..." required />
                 </div>
+                <SelectField
+                  label="الجنس"
+                  value={basic.gender}
+                  onChange={setB('gender')}
+                  options={[
+                    { label: 'ذكر', value: 'male' },
+                    { label: 'أنثى', value: 'female' },
+                  ]}
+                />
+              </div>
 
-                {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+              {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
 
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-lg font-bold shadow-xl transition-all duration-300 hover:scale-[1.01]"
-                >
-                  {isPending ? 'جاري التسجيل...' : 'التالي ←'}
-                </button>
-
-                <p className="text-center text-sm text-gray-500">
-                  لديك حساب؟{' '}
-                  <button
-                    type="button"
-                    onClick={() => { setError(null); setMode('login'); }}
-                    className="text-emerald-600 font-semibold underline hover:opacity-80"
-                  >
-                    تسجيل الدخول
-                  </button>
-                </p>
-              </motion.form>
-            )}
-
-            {/* ─── REGISTER STEP 2 (Medical) ─── */}
-            {mode === 'register2' && (
-              <motion.form
-                key="register2"
-                variants={pageVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.3 }}
-                onSubmit={handleRegister2}
-                className="space-y-5"
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-lg font-bold shadow-xl transition-all duration-300 hover:scale-[1.01]"
               >
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center leading-relaxed">
-                  أضف بياناتك الطبية لتسهيل التعامل في حالات الطوارئ.
-                  يمكنك تخطي هذه الخطوة وإكمالها لاحقاً من لوحة التحكم.
-                </p>
+                {isPending ? 'جاري التسجيل...' : 'التالي ←'}
+              </button>
 
-                <div className="grid md:grid-cols-2 gap-5 ">
+              <p className="text-center text-sm text-gray-500">
+                لديك حساب؟{' '}
+                <button
+                  type="button"
+                  onClick={() => { setError(null); setMode('login'); }}
+                  className="text-emerald-600 font-semibold underline hover:opacity-80"
+                >
+                  تسجيل الدخول
+                </button>
+              </p>
+            </motion.form>
+          )}
 
-                  <SelectField
-                    label="فصيلة الدم"
-                    value={medical.bloodType}
-                    onChange={setM('bloodType')}
-                    options={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((b) => ({ label: b, value: b }))}
-                  />
+          {/* ─── REGISTER STEP 2 (Medical) ─── */}
+          {mode === 'register2' && (
+            <motion.form
+              key="register2"
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+              onSubmit={handleRegister2}
+              className="space-y-5"
+            >
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center leading-relaxed">
+                أضف بياناتك الطبية لتسهيل التعامل في حالات الطوارئ.
+                يمكنك تخطي هذه الخطوة وإكمالها لاحقاً من لوحة التحكم.
+              </p>
 
-                  {/* <SelectField
+              <div className="grid md:grid-cols-2 gap-5 ">
+
+                <SelectField
+                  label="فصيلة الدم"
+                  value={medical.bloodType}
+                  onChange={setM('bloodType')}
+                  options={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((b) => ({ label: b, value: b }))}
+                />
+
+                {/* <SelectField
                     label="الحالة الصحية"
                     value={medical.status}
                     onChange={setM('status')}
@@ -453,43 +537,50 @@ const AuthPage: React.FC = () => {
                       { label: 'حرج', value: 'critical' },
                     ]}
                   /> */}
-                  <div className="md:col-span-2">
-                    <Field label="الأمراض المزمنة" value={medical.chronicDiseases} onChange={setM('chronicDiseases')} placeholder="مثال: السكري، ضغط الدم..." />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Field label="الحساسية" value={medical.allergies} onChange={setM('allergies')} placeholder="مثال: البنسلين، الفول السوداني..." />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Field label="الأدوية الحالية" value={medical.currentMedication} onChange={setM('currentMedication')} placeholder="مثال: ميتفورمين 500mg..." />
-                  </div>
+                <div className="md:col-span-2">
+                  <Field label="الأمراض المزمنة" value={medical.chronicDiseases} onChange={setM('chronicDiseases')} placeholder="مثال: السكري، ضغط الدم..." />
                 </div>
-
-                {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
-
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={handleSkip}
-                    className="flex-1 py-4 rounded-2xl border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
-                  >
-                    تخطي الآن
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isPending}
-                    className="flex-1 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold shadow-xl transition-all duration-300 hover:scale-[1.01]"
-                  >
-                    {isPending ? 'جاري الحفظ...' : 'حفظ والدخول'}
-                  </button>
+                <div className="md:col-span-2">
+                  <Field label="الحساسية" value={medical.allergies} onChange={setM('allergies')} placeholder="مثال: البنسلين، الفول السوداني..." />
                 </div>
-              </motion.form>
-            )}
+                <div className="md:col-span-2">
+                  <Field label="الأدوية الحالية" value={medical.currentMedication} onChange={setM('currentMedication')} placeholder="مثال: ميتفورمين 500mg..." />
+                </div>
+              </div>
 
-          </AnimatePresence>
-        </div>
+              {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setError(null); setMode('register1'); }}
+                  className="py-4 px-5 rounded-2xl border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 flex items-center gap-2"
+                >
+                  → رجوع
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className="flex-1 py-4 rounded-2xl border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
+                >
+                  تخطي الآن
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="flex-1 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold shadow-xl transition-all duration-300 hover:scale-[1.01]"
+                >
+                  {isPending ? 'جاري الحفظ...' : 'حفظ والدخول'}
+                </button>
+              </div>
+            </motion.form>
+          )}
+
+        </AnimatePresence>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default AuthPage;

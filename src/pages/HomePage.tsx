@@ -92,7 +92,11 @@ const HomePage: React.FC = () => {
             </button>
           ) : (
             <button
-              onClick={() => navigate('/auth')}
+              onClick={() =>
+                navigate('/auth', {
+                  state: { mode: 'register1' },
+                })
+              }
               className="px-11 py-4 text-lg font-semibold text-white bg-emerald-600 rounded-xl shadow-lg hover:bg-emerald-700 transition-all duration-300 hover:scale-[1.03]"
             >
               إنشاء حساب مجاني
