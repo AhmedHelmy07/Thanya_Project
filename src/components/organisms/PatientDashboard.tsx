@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 
 
 const PatientDashboard = () => {
-  const { user:userd } = useAuth();
+  const { user: userd } = useAuth();
 
   /* ================= DASHBOARD ================= */
   const queryClient = useQueryClient();
@@ -22,7 +22,7 @@ const PatientDashboard = () => {
   } = useApiGet(
     "/Dashboard/user",
     {},
-    ["dashboardUser", userd?.id],  !!userd
+    ["dashboardUser", userd?.id], !!userd
   );
 
   /* ================= USER ================= */
@@ -84,6 +84,7 @@ const PatientDashboard = () => {
       chronicDiseases: "",
       allergies: "",
       currentMedication: "",
+      weight: "",
     });
 
   /* ================= THEME ================= */
@@ -114,27 +115,52 @@ const PatientDashboard = () => {
     return () => observer.disconnect();
 
   }, []);
-
+  const cleanValue = (value: string) => {
+    return value.trim() === "" ? "-" : value;
+  };
   /* ================= UPDATE ================= */
-  const cleanValue = (val: string) =>
-    val.trim() === "" ? null : val;
   const handleUpdate = () => {
+
     updateMedical(
       {
         path: "/Account/medical/update",
+
         data: {
           bloodType: cleanValue(editData.bloodType),
-          chronicDiseases: cleanValue(editData.chronicDiseases),
-          allergies: cleanValue(editData.allergies),
-          currentMedication: cleanValue(editData.currentMedication),
+
+          chronicDiseases: cleanValue(
+            editData.chronicDiseases
+          ),
+
+          allergies: cleanValue(
+            editData.allergies
+          ),
+
+          currentMedication: cleanValue(
+            editData.currentMedication
+          ),
+
+          weight:
+            editData.weight && editData.weight.trim() !== ""
+              ? editData.weight
+              : null,
         },
       },
-      {
-        onSuccess: (res) => {
 
-          queryClient.invalidateQueries({ queryKey: ["dashboardUser", userd?.id] });
+      {
+        onSuccess: () => {
+
+          queryClient.invalidateQueries({
+            queryKey: ["dashboardUser", userd?.id],
+          });
+
+          refetch();
 
           setShowEditModal(false);
+        },
+
+        onError: (err) => {
+          console.log(err);
         },
       }
     );
@@ -277,6 +303,7 @@ const PatientDashboard = () => {
                     chronicDiseases: medicalRecord?.chronicDiseases || "",
                     allergies: medicalRecord?.allergies || "",
                     currentMedication: medicalRecord?.currentMedication || "",
+                    weight: medicalRecord?.weight || "",
                   });
 
                   setShowEditModal(true);
@@ -321,7 +348,13 @@ const PatientDashboard = () => {
                 }
                 dark={dark}
               />
-
+              <Card
+                label="Weight"
+                value={
+                  medicalRecord?.weight
+                }
+                dark={dark}
+              />
             </div>
 
           </section>
@@ -543,12 +576,26 @@ const PatientDashboard = () => {
                   : "border-gray-300 bg-white text-black"
                   }`}
               />
+              <input
+                value={editData.weight}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    weight: e.target.value,
+                  })
+                }
+                placeholder="الوزن"
+                className={`mb-4 w-full rounded-xl border p-3 ${dark
+                  ? "border-gray-700 bg-gray-900 text-white"
+                  : "border-gray-300 bg-white text-black"
+                  }`}
+              />
 
               {/* SAVE */}
 
               <button
+                type="button"
                 onClick={handleUpdate}
-                disabled={isPending}
                 className="w-full rounded-xl bg-emerald-500 py-3 text-white"
               >
                 {isPending
