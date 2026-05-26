@@ -140,10 +140,7 @@ const PatientDashboard = () => {
             editData.currentMedication
           ),
 
-          weight:
-            editData.weight && editData.weight.trim() !== ""
-              ? editData.weight
-              : null,
+          weight:cleanValue(editData.weight),
         },
       },
 
