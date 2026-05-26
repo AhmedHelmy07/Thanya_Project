@@ -41,8 +41,8 @@ const Field: React.FC<{
   error?: string | null;
   onWheel?: React.WheelEventHandler<HTMLInputElement>;
 }> = ({ label, type = 'text', value, onChange, placeholder, required, error }) => (
-  <div className="flex flex-col items-start gap-1 w-full">
-    <label className="block text-sm font-semibold text-gray-600 dark:text-gray-300 text-start mb-1">
+  <div className="space-y-1.5">
+    <label className="block text-sm font-semibold text-gray-600 dark:text-gray-300 text-start ">
       {label}
     </label>
     <input
@@ -52,7 +52,7 @@ const Field: React.FC<{
       onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
       placeholder={placeholder}
       required={required}
-      className={`w-full h-[56px] rounded-2xl border ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'} bg-white dark:bg-gray-800 px-5 py-4 text-sm outline-none transition-all duration-300 hover:border-emerald-300 dark:text-white focus:ring-2`}
+      className={`w-full rounded-2xl border ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'} bg-white dark:bg-gray-800 px-5 py-4 text-sm outline-none transition-all duration-300 hover:border-emerald-300 dark:text-white focus:ring-2`}
     />
     {error && <p className="text-xs text-red-500 font-medium pt-0.5">{error}</p>}
 
@@ -70,7 +70,7 @@ const PasswordField: React.FC<{
 }> = ({ label, value, onChange, placeholder, required, error }) => {
   const [show, setShow] = useState(false);
   return (
-    <div className="flex flex-col items-start gap-1 w-full">
+    <div className="space-y-1.5">
       <label className="block text-sm font-semibold text-gray-600 dark:text-gray-300 text-start mb-1">
         {label}
       </label>
