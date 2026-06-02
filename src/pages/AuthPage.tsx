@@ -7,6 +7,32 @@ import LoadingScreen from "../components/atoms/LoadingScreen";
 import { useAuth } from '../context/AuthContext';
 import { SiSession } from 'react-icons/si';
 import { Eye, EyeOff } from 'lucide-react';
+
+/* ─── Helper function to create FormData from form object ─── */
+const createFormData = (basicData: any, medicalData: any): FormData => {
+  const formData = new FormData();
+  
+  // Add basic fields
+  Object.entries(basicData).forEach(([key, value]) => {
+    if (value !== null && value !== undefined) {
+      formData.append(key, String(value));
+    }
+  });
+  
+  // Add medical fields
+  Object.entries(medicalData).forEach(([key, value]) => {
+    if (key === 'MedicalImages' && Array.isArray(value)) {
+      // Add each file with the same field name
+      value.forEach((file: File) => {
+        formData.append('MedicalImages', file);
+      });
+    } else if (value !== null && value !== undefined) {
+      formData.append(key, String(value));
+    }
+  });
+  
+  return formData;
+};
 /* ─── Types ─── */
 type Mode = 'login' | 'register1' | 'register2';
 
@@ -28,6 +54,8 @@ interface MedicalForm {
   currentMedication: string;
   status: string;
   weight: string;
+  Summery: string;
+  MedicalImages: File[];
 }
 
 /* ─── Reusable Field ─── */
@@ -52,10 +80,59 @@ const Field: React.FC<{
       onWheel={(e) => (e.currentTarget as HTMLInputElement).blur()}
       placeholder={placeholder}
       required={required}
-      className={`w-full rounded-2xl border ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'} bg-white dark:bg-gray-800 px-5 py-4 text-sm outline-none transition-all duration-300 hover:border-emerald-300 dark:text-white focus:ring-2`}
+      className={`w-full rounded-2xl border 
+        ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'} 
+        bg-white dark:bg-gray-800 px-5 py-4 text-sm outline-none 
+        transition-all duration-300 hover:border-emerald-300 dark:text-white focus:ring-2 
+        ${type === 'file' && "file:border file:rounded-4xl file:px-4 file:p-0.5 file:relative file:top-0.5 file:right-1.5 file:cursor-pointerfile:transition-colors file:duration-300 "}`}
     />
     {error && <p className="text-xs text-red-500 font-medium pt-0.5">{error}</p>}
 
+  </div>
+);
+
+/* ─── File Field (for multiple files) ─── */
+const FileField: React.FC<{
+  label: string;
+  files: File[];
+  onChange: (files: File[]) => void;
+  placeholder?: string;
+  error?: string | null;
+  accept?: string;
+}> = ({ label, files, onChange, placeholder, error, accept = "image/*,.pdf,.doc,.docx" }) => (
+  <div className="space-y-1.5">
+    <label className="block text-sm font-semibold text-gray-600 dark:text-gray-300 text-start ">
+      {label}
+    </label>
+    <input
+      type="file"
+      multiple
+      accept={accept}
+      onChange={(e) => onChange(Array.from(e.target.files || []))}
+      placeholder={placeholder}
+      className={`w-full rounded-2xl border 
+        ${error ? 'border-red-400 focus:ring-red-400' : 'border-gray-200 dark:border-gray-700 focus:ring-emerald-500'} 
+        bg-white dark:bg-gray-800 px-5 py-4 text-sm outline-none 
+        transition-all duration-300 hover:border-emerald-300 dark:text-white focus:ring-2 
+        file:border-0 file:bg-emerald-50 dark:file:bg-emerald-900/20 file:text-emerald-700 dark:file:text-emerald-300 file:rounded-lg file:px-4 file:py-2 file:cursor-pointer file:transition-all file:duration-300 file:hover:bg-emerald-100 dark:file:hover:bg-emerald-900/40 file:font-semibold`}
+    />
+    {files.length > 0 && (
+      <div className="mt-2 flex flex-wrap gap-2">
+        {files.map((file, idx) => (
+          <div key={idx} className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-lg text-xs text-emerald-700 dark:text-emerald-300">
+            <span className="truncate max-w-xs">{file.name}</span>
+            <button
+              type="button"
+              onClick={() => onChange(files.filter((_, i) => i !== idx))}
+              className="font-bold hover:text-red-600"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
+    {error && <p className="text-xs text-red-500 font-medium pt-0.5">{error}</p>}
   </div>
 );
 
@@ -184,13 +261,22 @@ const AuthPage: React.FC = () => {
     currentMedication: '',
     status: '',
     weight: '',
+    Summery: '',
+    MedicalImages: [],
   });
 
   const setB = (k: keyof BasicForm) => (v: string) =>
     setBasic((prev) => ({ ...prev, [k]: v }));
 
-  const setM = (k: keyof MedicalForm) => (v: string) =>
-    setMedical((prev) => ({ ...prev, [k]: v }));
+  const setM = (k: keyof MedicalForm) => (v: string | File[]) => {
+    if (Array.isArray(v)) {
+      // Handle file array (for MedicalImages)
+      setMedical((prev) => ({ ...prev, [k]: v }));
+    } else {
+      // Handle string values
+      setMedical((prev) => ({ ...prev, [k]: v }));
+    }
+  };
 
   /* ── API mutations ── */
   /* ── API mutations ── */
@@ -298,10 +384,12 @@ const AuthPage: React.FC = () => {
   const handleRegister2 = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    registerMutation.mutate(
-      {
-        path: '/Account/Register',
-        data: {
+    
+    // Create FormData if there are files, otherwise use regular object
+    const hasFiles = medical.MedicalImages && medical.MedicalImages.length > 0;
+    const data = hasFiles 
+      ? createFormData(basic, medical)
+      : {
           ...basic,
           bloodType: medical.bloodType,
           chronicDiseases: medical.chronicDiseases,
@@ -309,7 +397,14 @@ const AuthPage: React.FC = () => {
           currentMedication: medical.currentMedication,
           status: medical.status,
           weight: medical.weight,
-        },
+          Summery: medical.Summery,
+          MedicalImages: medical.MedicalImages,
+        };
+
+    registerMutation.mutate(
+      {
+        path: '/Account/Register',
+        data: data,
       },
       {
         onSuccess: (data: any) => {
@@ -328,27 +423,23 @@ const AuthPage: React.FC = () => {
         }
       }
     );
-    // medicalMutation.mutate(
-    //   {
-    //     path: '/Account/medical/update',
-    //     data: medical,
-    //   },
-    //   {
-    //     onSuccess: () => {
-    //       navigate('/dashboard', { replace: true });
-    //     },
-    //     onError: () => {
-    //       setError('حدث خطأ أثناء حفظ البيانات الطبية');
-    //     },
-    //   }
-    // );
   };
 
   const handleSkip = () => {
-    registerMutation.mutate(
-      {
-        path: '/Account/Register',
-        data: {
+    // Create FormData if there are files, otherwise use regular object
+    const hasFiles = medical.MedicalImages && medical.MedicalImages.length > 0;
+    const data = hasFiles
+      ? createFormData(basic, {
+          bloodType: medical?.bloodType ?? null,
+          chronicDiseases: medical?.chronicDiseases ?? null,
+          allergies: medical?.allergies ?? null,
+          currentMedication: medical?.currentMedication ?? null,
+          status: medical?.status ?? null,
+          weight: medical?.weight ?? null,
+          Summery: medical?.Summery ?? null,
+          MedicalImages: medical?.MedicalImages ?? [],
+        })
+      : {
           ...basic,
           bloodType: medical?.bloodType ?? null,
           chronicDiseases: medical?.chronicDiseases ?? null,
@@ -356,7 +447,14 @@ const AuthPage: React.FC = () => {
           currentMedication: medical?.currentMedication ?? null,
           status: medical?.status ?? null,
           weight: medical?.weight ?? null,
-        },
+          Summery: medical?.Summery ?? null,
+          MedicalImages: medical?.MedicalImages ?? null,
+        };
+
+    registerMutation.mutate(
+      {
+        path: '/Account/Register',
+        data: data,
       },
       {
         onSuccess: (data: any) => {
@@ -558,6 +656,24 @@ const AuthPage: React.FC = () => {
                   <div className="md:col-span-2">
                     <Field label="الأدوية الحالية" value={medical.currentMedication} onChange={setM('currentMedication')} placeholder="مثال : ميتفورمين 500mg..." />
                   </div>
+                  <div className="md:col-span-2">
+                    <FileField 
+                      label="ملحقات طبية" 
+                      files={medical.MedicalImages} 
+                      onChange={(files) => setM('MedicalImages')(files)}
+                      accept="image/*,.pdf,.doc,.docx"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-600 dark:text-gray-300 text-start mb-1.5">ملخص الحالة الصحية</label>
+                    <textarea 
+                      className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-5 py-4 text-sm outline-none transition-all duration-300 hover:border-emerald-300 dark:text-white focus:ring-2 focus:ring-emerald-500 resize-vertical min-h-32 focus:border-emerald-500"
+                      value={medical.Summery}
+                      placeholder="اكتب هنا ملخص حالتك الصحية ..."
+                      onChange={(e) => setM('Summery')(e.target.value)}
+                    />
+                  </div>
+
                 </div>
 
                 {error && <p className="text-sm text-red-500 font-medium">{error}</p>}

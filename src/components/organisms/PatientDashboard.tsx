@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { User, ClipboardList, Activity, X, } from "lucide-react";
-import { useApiGet, useApiPut, } from "../../hooks/Apis hooks/useApi";
+import React, { useState, useEffect, useRef } from "react";
+import { User, ClipboardList, Activity, X, Trash2, } from "lucide-react";
+import { useApiGet, useApiPut, useApiPatch, useApiPost, useApiDelete } from "../../hooks/Apis hooks/useApi";
 import LoadingScreen from "../atoms/LoadingScreen";
 import ErrorScreen from "../atoms/ErrorScreen";
 import { useQueryClient } from "@tanstack/react-query";
@@ -85,7 +85,63 @@ const PatientDashboard = () => {
       allergies: "",
       currentMedication: "",
       weight: "",
+      summery: "",
     });
+
+  const addFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [expandedImage, setExpandedImage] = useState<any>(null);
+
+  const { mutate: addImages, isPending: isUpdatingImages } = useApiPost(["me", userd?.id]);
+
+  const createFormData = (newFile?: File) => {
+    const formData = new FormData();
+
+    if (newFile) {
+      formData.append("Images", newFile);
+    }
+    return formData;
+  };
+
+  const handleAddImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    addImages(
+      {
+        path: "/Account/medical/add-images",
+        data: createFormData(file),
+      },
+      {
+        onSuccess: () => {
+          if (addFileInputRef.current) {
+            addFileInputRef.current.value = "";
+          }
+        },
+        onError: (err) => {
+          console.error("Add image error", err);
+        },
+      }
+    );
+  };
+  const { mutate: deleteImage, isPending: isDeletingImages } = useApiDelete(["me", userd?.id]);
+
+  const handleDeleteImage = (imageId: number) => {
+    deleteImage(
+      {
+        path: `/Account/medical/delete-image/${imageId}`,
+        data: {},
+      },
+      {
+        onSuccess: () => {
+          // successful deletion will invalidate the query via useApiDelete
+        },
+        onError: (err) => {
+          console.error("Delete image error", err);
+        },
+      }
+    );
+  };
+
 
   /* ================= THEME ================= */
 
@@ -140,7 +196,9 @@ const PatientDashboard = () => {
             editData.currentMedication
           ),
 
-          weight:cleanValue(editData.weight),
+          weight: cleanValue(editData.weight),
+
+          summery: cleanValue(editData.summery),
         },
       },
 
@@ -194,6 +252,14 @@ const PatientDashboard = () => {
 
       <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-emerald-300/20 blur-3xl animate-pulse" />
 
+      <input
+        ref={addFileInputRef}
+        type="file"
+        accept="image/*,.pdf,.doc,.docx"
+        className="hidden"
+        onChange={handleAddImage}
+      />
+
       {/* CONTENT */}
 
       <div className="relative z-10 space-y-8">
@@ -233,7 +299,14 @@ const PatientDashboard = () => {
             >
               {user?.email}
             </p>
-
+            <p
+              className={`text-xsm ${dark
+                ? "text-gray-300"
+                : "text-gray-600"
+                }`}
+            >
+              {user?.age} سنة
+            </p>
           </div>
 
         </header>
@@ -301,6 +374,7 @@ const PatientDashboard = () => {
                     allergies: medicalRecord?.allergies || "",
                     currentMedication: medicalRecord?.currentMedication || "",
                     weight: medicalRecord?.weight || "",
+                    summery: medicalRecord?.summery || "",
                   });
 
                   setShowEditModal(true);
@@ -311,7 +385,14 @@ const PatientDashboard = () => {
               </button>
 
             </div>
-
+            <div className="mb-4 w-full">
+              <Card
+                label="Summary"
+                value={
+                  medicalRecord?.summery
+                }
+                dark={dark}
+              /></div>
             <div className="grid gap-4 sm:grid-cols-2">
 
               <Card
@@ -461,6 +542,102 @@ const PatientDashboard = () => {
             </div>
 
           </section>
+          {/* ATTACHMENT */}
+
+          <section
+            className={`lg:col-span-3 rounded-2xl border p-5 backdrop-blur ${dark
+              ? "border-gray-700 bg-gray-800/60 text-white"
+              : "border-gray-200 bg-white/70 text-gray-900"
+              }`}
+          >
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold">Attachment</h2>
+              <button
+                type="button"
+                onClick={() => addFileInputRef.current?.click()}
+                disabled={isUpdatingImages}
+                className="rounded-xl bg-emerald-500 px-4 py-2 text-white disabled:opacity-60"
+              >
+                {isUpdatingImages ? "Adding..." : "Add"}
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {(user?.medicalRecord?.image ?? []).length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white/70 p-10 text-center dark:border-gray-600 dark:bg-gray-900/50">
+                  <p className="text-sm text-gray-500 dark:text-gray-300">No attachment yet.</p>
+                  <button
+                    type="button"
+                    onClick={() => addFileInputRef.current?.click()}
+                    disabled={isUpdatingImages}
+                    className="mt-4 rounded-xl bg-emerald-500 px-4 py-2 text-white disabled:opacity-60"
+                  >
+                    {isUpdatingImages ? "Adding..." : "Add"}
+                  </button>
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                  {(user?.medicalRecord?.image ?? []).map((image: any) => (
+                    <div
+                      key={image.id}
+                      className="group relative flex h-72 overflow-hidden rounded-2xl border-2 border-gray-300 bg-gray-100 transition-all hover:border-emerald-400 dark:border-gray-600 dark:bg-gray-900 cursor-pointer"
+                      onClick={() => setExpandedImage(image)}
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteImage(image.id);
+                        }}
+                        disabled={isDeletingImages}
+                        className="absolute left-3 bottom-3 z-10 flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-red-500 shadow-lg hover:bg-white disabled:opacity-60"
+                      >
+                        <Trash2 size={16} />
+                        Delete
+                      </button>
+                      <div className="flex-1 overflow-hidden">
+                        <img
+                          src={image.url}
+                          alt={`attachment-${image.id}`}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                        />
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">
+                        <div className="text-white opacity-0 transition-opacity group-hover:opacity-100">
+                          Click to expand
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* IMAGE EXPANSION MODAL */}
+          {expandedImage && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+              onClick={() => setExpandedImage(null)}
+            >
+              <div
+                className="relative max-w-2xl max-h-[80vh]  rounded-2xl overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => setExpandedImage(null)}
+                  className="absolute z-[100] right-4 top-4 rounded-full bg-white p-2 text-gray-900 hover:bg-gray-200"
+                >
+                  <X size={24} />
+                </button>
+                <img
+                  src={expandedImage.url}
+                  alt="expanded"
+                  className="max-w-2xl   max-h-[80vh] object-contain"
+                />
+              </div>
+            </div>
+          )}
 
         </div>
 
@@ -587,6 +764,20 @@ const PatientDashboard = () => {
                   : "border-gray-300 bg-white text-black"
                   }`}
               />
+              < textarea
+                value={editData.summery}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    summery: e.target.value,
+                  })
+                }
+                placeholder="ملخص الحالة الصحية"
+                className={`mb-4 w-full rounded-xl border p-3 ${dark
+                  ? "border-gray-700 bg-gray-900 text-white"
+                  : "border-gray-300 bg-white text-black"
+                  }`}
+              />
 
               {/* SAVE */}
 
@@ -666,7 +857,7 @@ const Card = ({
       {label}
     </p>
 
-    <p className="font-bold">
+    <p className="font-bold whitespace-pre-wrap break-words text-sm">
       {value || "-"}
     </p>
 

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiGet, apiPost, apiPut, apiDelete } from '../../api/axiosApiConfig';
+import { apiGet, apiPost, apiPut, apiPatch, apiDelete } from '../../api/axiosApiConfig';
 
 export const useApiGet = (path, params, queryKey, enabled = true) => {
     const queryFn = () => apiGet(path, params);
@@ -38,6 +38,23 @@ export const useApiPut = (queryKey, onSuccessFn = () => { }, onErrorFn = () => {
         },
         onError: (error) => {
             console.error("Error authenticating :: ", error);
+            onErrorFn();
+        }
+    })
+}
+
+export const useApiPatch = (queryKey, onSuccessFn = () => { }, onErrorFn = () => { }) => {
+    const queryClient = useQueryClient();
+    const mutationFn = (sentData) =>
+        apiPatch(sentData.path, sentData.data ?? {}, sentData.params);
+    return useMutation({
+        mutationFn,
+        onSuccess: (returnedData, sentData) => {
+            queryClient.invalidateQueries({ queryKey });
+            onSuccessFn(returnedData, sentData);
+        },
+        onError: (error) => {
+            console.error("Error patching data :: ", error);
             onErrorFn();
         }
     })
