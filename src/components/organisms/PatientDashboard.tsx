@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { User, ClipboardList, Activity, X, Trash2, } from "lucide-react";
+import { User, ClipboardList, Activity, X, Trash2,  } from "lucide-react";
 import { useApiGet, useApiPut, useApiPost, useApiDelete } from "../../hooks/Apis hooks/useApi";
 import LoadingScreen from "../atoms/LoadingScreen";
 import ErrorScreen from "../atoms/ErrorScreen";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
 import { LuGalleryHorizontal } from "react-icons/lu";
-import { HeartRateIcon, LocationIcon } from "../atoms/icons";
+import { ClockIcon, HeartRateIcon, LocationIcon } from "../atoms/icons";
 
 
 
@@ -572,10 +572,16 @@ const PatientDashboard = () => {
                             {d.oxygenLevel}%
                           </span>
                         </div>
-                        <p className="mt-2 text-xs opacity-60">
-                          {d.lastUpdate}
-                        </p>
+                        <div className="flex items-center justify-between text-sm text-gray-500">
+                          <div className="flex items-center gap-2">
+                            <ClockIcon className="h-4 w-4" />
+                            Last Update
+                          </div>
 
+                          <span>
+                            {new Date(d.lastUpdate).toLocaleString()}
+                          </span>
+                        </div>
                       </div>
                     );
                   }
