@@ -95,6 +95,13 @@ export const ClockIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
+export const HeartRateIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l3-3 2.25 3.75L12.75 7.5l2.25 6.75 3-3" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 20.25c3.59-3.82 6-6.38 6-9.75a4.5 4.5 0 00-9 0 4.5 4.5 0 00-9 0c0 3.37 2.41 5.93 6 9.75" />
+  </svg>
+);
+
 export const MessageIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.76 9.76 0 01-2.53-.388m-5.18-3.04A9.75 9.75 0 016 3.75c0-1.01.19-1.983.53-2.898m-2.286 4.346A9.75 9.75 0 003 12c0 .341.028.675.083 1.004M12 21c-2.23 0-4.24-.86-5.83-2.25M3.322 14.545a9.75 9.75 0 01-.157-2.545z" />

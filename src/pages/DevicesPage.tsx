@@ -1,6 +1,6 @@
 import React from "react";
 import { useApiGet } from "../hooks/Apis hooks/useApi";
-import { DeviceIcon, ClockIcon } from "../components/atoms/icons";
+import { DeviceIcon, HeartRateIcon, ClockIcon } from "../components/atoms/icons";
 import LoadingScreen from "../components/atoms/LoadingScreen";
 import ErrorScreen from "../components/atoms/ErrorScreen";
 import { useAuth } from "@/context/AuthContext";
@@ -18,7 +18,10 @@ type ApiDevice = {
   lat: number;
   long: number;
   lastUpdate: string;
+  heartRate: number;
+  oxygenLevel: number;
   userId: number;
+
 };
 
 /* ===========================
@@ -47,9 +50,8 @@ const DeviceCard: React.FC<{ device: ApiDevice }> = ({ device }) => {
     >
       {/* Top Accent Bar */}
       <div
-        className={`h-1 w-full ${
-          isConnected ? "bg-emerald-500" : "bg-gray-400"
-        }`}
+        className={`h-1 w-full ${isConnected ? "bg-emerald-500" : "bg-gray-400"
+          }`}
       />
 
       <div className="p-7 flex flex-col gap-6 flex-grow">
@@ -81,10 +83,9 @@ const DeviceCard: React.FC<{ device: ApiDevice }> = ({ device }) => {
                 className={`
                   inline-flex items-center px-4 py-1.5
                   text-xs font-semibold rounded-full
-                  ${
-                    isConnected
-                      ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
-                      : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                  ${isConnected
+                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                    : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"
                   }
                 `}
               >
@@ -117,7 +118,27 @@ const DeviceCard: React.FC<{ device: ApiDevice }> = ({ device }) => {
           </div>
         </div>
 
-        {/* Last Sync */}
+        {/* Heart Rate */}
+        <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center gap-2">
+            <HeartRateIcon className="h-4 w-4" />
+            Heart Rate
+          </div>
+
+          <span>
+            {device.heartRate} bpm
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center gap-2">
+          <h2>O<span className="text-sm">2</span></h2>
+            Oxygen Level
+          </div>
+
+          <span>
+            {device.oxygenLevel}%
+          </span>
+        </div>
         <div className="flex items-center justify-between text-sm text-gray-500">
           <div className="flex items-center gap-2">
             <ClockIcon className="h-4 w-4" />
@@ -138,8 +159,8 @@ const DeviceCard: React.FC<{ device: ApiDevice }> = ({ device }) => {
 =========================== */
 
 const DevicesPage: React.FC = () => {
-    const { user } = useAuth();
-  
+  const { user } = useAuth();
+
   const { data, isLoading, isError, error } = useApiGet(
     "/Devices/GETDevices",
     {},
