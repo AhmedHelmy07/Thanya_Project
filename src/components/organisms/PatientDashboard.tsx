@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { User, ClipboardList, Activity, X, Trash2, } from "lucide-react";
-import { useApiGet, useApiPut, useApiPatch, useApiPost, useApiDelete } from "../../hooks/Apis hooks/useApi";
+import { useApiGet, useApiPut, useApiPost, useApiDelete } from "../../hooks/Apis hooks/useApi";
 import LoadingScreen from "../atoms/LoadingScreen";
 import ErrorScreen from "../atoms/ErrorScreen";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
+import { LuGalleryHorizontal } from "react-icons/lu";
 
 
 
@@ -22,9 +23,16 @@ const PatientDashboard = () => {
   } = useApiGet(
     "/Dashboard/user",
     {},
-    ["dashboardUser", userd?.id], !!userd
+    ["dashboardUser", userd?.id], (!!userd && userd?.role === 'User')
   );
-
+  /* ================= Emergency user ================= */
+  const {
+    data: emergencyUserData,
+  } = useApiGet(
+    "/Dashboard/emergency-record",
+    { token: sessionStorage.getItem('targetUserId') || undefined },
+    ["emergencyRecord", userd?.id], (!!userd && userd?.role === 'Paramedic')
+  );
   /* ================= USER ================= */
 
   const {
@@ -32,7 +40,7 @@ const PatientDashboard = () => {
   } = useApiGet(
     "/Account/me",
     {},
-    ["me", userd?.id], !!userd
+    ["me", userd?.id], (!!userd && userd?.role === 'User')
   );
 
   /* ================= MEDICAL ================= */
@@ -62,6 +70,7 @@ const PatientDashboard = () => {
   const dashboard = data || {};
 
   const user = userData || {};
+  const emergencyUser = emergencyUserData || {};
 
   const medicalRecord =
 
@@ -288,61 +297,72 @@ const PatientDashboard = () => {
                 : "text-gray-900"
                 }`}
             >
-              {user?.name}
+              {user?.name || emergencyUser?.fullName || "Patient Dashboard"}
             </h1>
-
-            <p
-              className={`text-sm ${dark
-                ? "text-gray-300"
-                : "text-gray-600"
-                }`}
-            >
-              {user?.email}
-            </p>
+            {userd?.role !== 'Paramedic' &&
+              <p
+                className={`text-sm ${dark
+                  ? "text-gray-300"
+                  : "text-gray-600"
+                  }`}
+              >
+                {user?.email}
+              </p>
+            }
+            {userd?.role === 'Paramedic' &&
+              <p
+                className={`text-sm ${dark
+                  ? "text-gray-300"
+                  : "text-gray-600"
+                  }`}
+              >
+                {emergencyUser?.gender}
+              </p>
+            }
             <p
               className={`text-xsm ${dark
                 ? "text-gray-300"
                 : "text-gray-600"
                 }`}
             >
-              {user?.age} سنة
+              Years Old {user?.age || emergencyUser?.age || "غير محدد"}
             </p>
           </div>
 
         </header>
 
         {/* STATS */}
+        {userd?.role !== 'Paramedic' &&
+          <div className="grid grid-cols-3 gap-4">
 
-        <div className="grid grid-cols-3 gap-4">
+            <Stat
+              label="Total"
+              value={
+                dashboard?.totalDevices || 0
+              }
+              dark={dark}
+            />
 
-          <Stat
-            label="Total"
-            value={
-              dashboard?.totalDevices || 0
-            }
-            dark={dark}
-          />
+            <Stat
+              label="Online"
+              value={
+                dashboard?.onlineDevices || 0
+              }
+              dark={dark}
+              green
+            />
 
-          <Stat
-            label="Online"
-            value={
-              dashboard?.onlineDevices || 0
-            }
-            dark={dark}
-            green
-          />
+            <Stat
+              label="Offline"
+              value={
+                dashboard?.offlineDevices || 0
+              }
+              dark={dark}
+              red
+            />
 
-          <Stat
-            label="Offline"
-            value={
-              dashboard?.offlineDevices || 0
-            }
-            dark={dark}
-            red
-          />
-
-        </div>
-
+          </div>
+        }
         {/* GRID */}
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -353,7 +373,8 @@ const PatientDashboard = () => {
             className={`rounded-2xl border p-5 backdrop-blur ${dark
               ? "border-gray-700 bg-gray-800/60 text-white"
               : "border-gray-200 bg-white/70 text-gray-900"
-              } lg:col-span-2`}
+              } lg:col-span-2 
+              ${userd?.role === 'Paramedic' ? "lg:col-span-3" : ""}`}
           >
 
             <div className="mb-4 flex items-center justify-between">
@@ -365,31 +386,31 @@ const PatientDashboard = () => {
                 Medical Record
 
               </h2>
+              {userd?.role === 'User' &&
+                <button
+                  onClick={() => {
+                    setEditData({
+                      bloodType: medicalRecord?.bloodType || "",
+                      chronicDiseases: medicalRecord?.chronicDiseases || "",
+                      allergies: medicalRecord?.allergies || "",
+                      currentMedication: medicalRecord?.currentMedication || "",
+                      weight: medicalRecord?.weight || "",
+                      summery: medicalRecord?.summery || "",
+                    });
 
-              <button
-                onClick={() => {
-                  setEditData({
-                    bloodType: medicalRecord?.bloodType || "",
-                    chronicDiseases: medicalRecord?.chronicDiseases || "",
-                    allergies: medicalRecord?.allergies || "",
-                    currentMedication: medicalRecord?.currentMedication || "",
-                    weight: medicalRecord?.weight || "",
-                    summery: medicalRecord?.summery || "",
-                  });
-
-                  setShowEditModal(true);
-                }}
-                className="rounded-xl bg-emerald-500 px-4 py-2 text-white"
-              >
-                Update
-              </button>
-
+                    setShowEditModal(true);
+                  }}
+                  className="rounded-xl bg-emerald-500 px-4 py-2 text-white"
+                >
+                  Update
+                </button>
+              }
             </div>
             <div className="mb-4 w-full">
               <Card
                 label="Summary"
                 value={
-                  medicalRecord?.summery
+                  medicalRecord?.summery || emergencyUser?.summery || "No summary available."
                 }
                 dark={dark}
               /></div>
@@ -398,7 +419,7 @@ const PatientDashboard = () => {
               <Card
                 label="Blood Type"
                 value={
-                  medicalRecord?.bloodType
+                  medicalRecord?.bloodType || emergencyUser?.bloodType || "Not specified"
                 }
                 dark={dark}
               />
@@ -406,7 +427,7 @@ const PatientDashboard = () => {
               <Card
                 label="Chronic Diseases"
                 value={
-                  medicalRecord?.chronicDiseases
+                  medicalRecord?.chronicDiseases || emergencyUser?.chronicDiseases || "Not specified"
                 }
                 dark={dark}
               />
@@ -414,7 +435,7 @@ const PatientDashboard = () => {
               <Card
                 label="Allergies"
                 value={
-                  medicalRecord?.allergies
+                  medicalRecord?.allergies || emergencyUser?.allergies || "Not specified"
                 }
                 dark={dark}
               />
@@ -422,14 +443,14 @@ const PatientDashboard = () => {
               <Card
                 label="Medication"
                 value={
-                  medicalRecord?.currentMedication
+                  medicalRecord?.currentMedication || emergencyUser?.currentMedication || "Not specified"
                 }
                 dark={dark}
               />
               <Card
                 label="Weight"
                 value={
-                  medicalRecord?.weight
+                  medicalRecord?.weight || emergencyUser?.weight || "Not specified"
                 }
                 dark={dark}
               />
@@ -438,112 +459,114 @@ const PatientDashboard = () => {
           </section>
 
           {/* DEVICES */}
+          {userd?.role !== 'Paramedic' &&
+            <section
+              className={`rounded-2xl border p-5 backdrop-blur ${dark
+                ? "border-gray-700 bg-gray-800/60 text-white"
+                : "border-gray-200 bg-white/70 text-gray-900"
+                }`}
+            >
 
-          <section
-            className={`rounded-2xl border p-5 backdrop-blur ${dark
-              ? "border-gray-700 bg-gray-800/60 text-white"
-              : "border-gray-200 bg-white/70 text-gray-900"
-              }`}
-          >
+              <h2 className="mb-4 flex items-center gap-2 font-bold">
 
-            <h2 className="mb-4 flex items-center gap-2 font-bold">
+                <Activity />
 
-              <Activity />
+                Devices
 
-              Devices
+              </h2>
 
-            </h2>
+              <div className="space-y-4">
 
-            <div className="space-y-4">
+                {(dashboard?.devices ?? []).map(
+                  (d: any) => {
 
-              {(dashboard?.devices ?? []).map(
-                (d: any) => {
+                    const isOnline =
+                      d?.status?.toLowerCase() ===
+                      "online";
 
-                  const isOnline =
-                    d?.status?.toLowerCase() ===
-                    "online";
+                    return (
 
-                  return (
+                      <div
+                        key={d.deviceId}
+                        className={`rounded-xl border p-4 ${dark
+                          ? "border-gray-700 bg-gray-900/40"
+                          : "border-gray-200 bg-gray-50"
+                          }`}
+                      >
 
-                    <div
-                      key={d.deviceId}
-                      className={`rounded-xl border p-4 ${dark
-                        ? "border-gray-700 bg-gray-900/40"
-                        : "border-gray-200 bg-gray-50"
-                        }`}
-                    >
+                        <p className="font-bold">
+                          {d.name}
+                        </p>
 
-                      <p className="font-bold">
-                        {d.name}
-                      </p>
+                        <p className="text-xs opacity-70">
+                          ID: {d.deviceId}
+                        </p>
 
-                      <p className="text-xs opacity-70">
-                        ID: {d.deviceId}
-                      </p>
+                        <p className="mt-1 text-sm">
 
-                      <p className="mt-1 text-sm">
+                          Status:
 
-                        Status:
-
-                        <span
-                          className={`ml-1 ${isOnline
-                            ? "text-green-400"
-                            : "text-red-400"
-                            }`}
-                        >
-                          {d.status}
-                        </span>
-
-                      </p>
-
-                      <p className="mt-1 text-xs opacity-70">
-                        Lat: {d.lat} | Long:{" "}
-                        {d.long}
-                      </p>
-
-                      {/* BATTERY */}
-
-                      <div className="mt-3">
-
-                        <div className="mb-1 flex justify-between text-xs">
-
-                          <span>
-                            Battery
+                          <span
+                            className={`ml-1 ${isOnline
+                              ? "text-green-400"
+                              : "text-red-400"
+                              }`}
+                          >
+                            {d.status}
                           </span>
 
-                          <span>
-                            {d.battery}%
-                          </span>
+                        </p>
+
+                        <p className="mt-1 text-xs opacity-70">
+                          Lat: {d.lat} | Long:{" "}
+                          {d.long}
+                        </p>
+
+                        {/* BATTERY */}
+
+                        <div className="mt-3">
+
+                          <div className="mb-1 flex justify-between text-xs">
+
+                            <span>
+                              Battery
+                            </span>
+
+                            <span>
+                              {d.battery}%
+                            </span>
+
+                          </div>
+
+                          <div className="h-2 w-full rounded-full bg-gray-300">
+
+                            <div
+                              className="h-2 rounded-full bg-emerald-500"
+                              style={{
+                                width: `${d.battery}%`,
+                              }}
+                            />
+
+                          </div>
 
                         </div>
 
-                        <div className="h-2 w-full rounded-full bg-gray-300">
-
-                          <div
-                            className="h-2 rounded-full bg-emerald-500"
-                            style={{
-                              width: `${d.battery}%`,
-                            }}
-                          />
-
-                        </div>
+                        <p className="mt-2 text-xs opacity-60">
+                          {d.lastUpdate}
+                        </p>
 
                       </div>
+                    );
+                  }
+                )}
 
-                      <p className="mt-2 text-xs opacity-60">
-                        {d.lastUpdate}
-                      </p>
+              </div>
 
-                    </div>
-                  );
-                }
-              )}
+            </section>
 
-            </div>
+          }
 
-          </section>
           {/* ATTACHMENT */}
-
           <section
             className={`lg:col-span-3 rounded-2xl border p-5 backdrop-blur ${dark
               ? "border-gray-700 bg-gray-800/60 text-white"
@@ -552,49 +575,54 @@ const PatientDashboard = () => {
           >
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-bold">Attachment</h2>
-              <button
-                type="button"
-                onClick={() => addFileInputRef.current?.click()}
-                disabled={isUpdatingImages}
-                className="rounded-xl bg-emerald-500 px-4 py-2 text-white disabled:opacity-60"
-              >
-                {isUpdatingImages ? "Adding..." : "Add"}
-              </button>
+              {userd?.role === 'User' &&
+                <button
+                  type="button"
+                  onClick={() => addFileInputRef.current?.click()}
+                  disabled={isUpdatingImages}
+                  className="rounded-xl bg-emerald-500 px-4 py-2 text-white disabled:opacity-60"
+                >
+                  {isUpdatingImages ? "Adding..." : "Add"}
+                </button>
+              }
             </div>
-
             <div className="space-y-4">
-              {(user?.medicalRecord?.image ?? []).length === 0 ? (
+              {(user?.medicalRecord?.image || emergencyUser?.images || []).length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white/70 p-10 text-center dark:border-gray-600 dark:bg-gray-900/50">
                   <p className="text-sm text-gray-500 dark:text-gray-300">No attachment yet.</p>
-                  <button
-                    type="button"
-                    onClick={() => addFileInputRef.current?.click()}
-                    disabled={isUpdatingImages}
-                    className="mt-4 rounded-xl bg-emerald-500 px-4 py-2 text-white disabled:opacity-60"
-                  >
-                    {isUpdatingImages ? "Adding..." : "Add"}
-                  </button>
+                  {userd?.role === 'User' &&
+                    <button
+                      type="button"
+                      onClick={() => addFileInputRef.current?.click()}
+                      disabled={isUpdatingImages}
+                      className="mt-4 rounded-xl bg-emerald-500 px-4 py-2 text-white disabled:opacity-60"
+                    >
+                      {isUpdatingImages ? "Adding..." : "Add"}
+                    </button>
+                  }
                 </div>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
-                  {(user?.medicalRecord?.image ?? []).map((image: any) => (
+                  {(user?.medicalRecord?.image || emergencyUser?.images || []).map((image: any) => (
                     <div
                       key={image.id}
                       className="group relative flex h-72 overflow-hidden rounded-2xl border-2 border-gray-300 bg-gray-100 transition-all hover:border-emerald-400 dark:border-gray-600 dark:bg-gray-900 cursor-pointer"
                       onClick={() => setExpandedImage(image)}
                     >
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteImage(image.id);
-                        }}
-                        disabled={isDeletingImages}
-                        className="absolute left-3 bottom-3 z-10 flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-red-500 shadow-lg hover:bg-white disabled:opacity-60"
-                      >
-                        <Trash2 size={16} />
-                        Delete
-                      </button>
+                      {userd?.role === 'User' &&
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteImage(image.id);
+                          }}
+                          disabled={isDeletingImages}
+                          className="absolute left-3 bottom-3 z-10 flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-red-500 shadow-lg hover:bg-white disabled:opacity-60"
+                        >
+                          <Trash2 size={16} />
+                          Delete
+                        </button>
+                      }
                       <div className="flex-1 overflow-hidden">
                         <img
                           src={image.url}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApiPost, useApiPut } from '../hooks/Apis hooks/useApi';
 import ErrorScreen from "../components/atoms/ErrorScreen";
@@ -8,17 +8,20 @@ import { useAuth } from '../context/AuthContext';
 import { SiSession } from 'react-icons/si';
 import { Eye, EyeOff } from 'lucide-react';
 
+
+
+
 /* ─── Helper function to create FormData from form object ─── */
 const createFormData = (basicData: any, medicalData: any): FormData => {
   const formData = new FormData();
-  
+
   // Add basic fields
   Object.entries(basicData).forEach(([key, value]) => {
     if (value !== null && value !== undefined) {
       formData.append(key, String(value));
     }
   });
-  
+
   // Add medical fields
   Object.entries(medicalData).forEach(([key, value]) => {
     if (key === 'MedicalImages' && Array.isArray(value)) {
@@ -30,7 +33,7 @@ const createFormData = (basicData: any, medicalData: any): FormData => {
       formData.append(key, String(value));
     }
   });
-  
+
   return formData;
 };
 /* ─── Types ─── */
@@ -228,7 +231,11 @@ const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, setUser, setIsLoggingOut } = useAuth();
+  const [searchParams] = useSearchParams();
+  const targetUserId = searchParams.get("token");
+  sessionStorage.setItem('targetUserId', targetUserId || '');
   const from = (location.state as any)?.from?.pathname || '/dashboard';
+
 
   const initialMode = (location.state as any)?.mode || 'login';
 
@@ -384,22 +391,22 @@ const AuthPage: React.FC = () => {
   const handleRegister2 = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     // Create FormData if there are files, otherwise use regular object
     const hasFiles = medical.MedicalImages && medical.MedicalImages.length > 0;
-    const data = hasFiles 
+    const data = hasFiles
       ? createFormData(basic, medical)
       : {
-          ...basic,
-          bloodType: medical.bloodType,
-          chronicDiseases: medical.chronicDiseases,
-          allergies: medical.allergies,
-          currentMedication: medical.currentMedication,
-          status: medical.status,
-          weight: medical.weight,
-          Summery: medical.Summery,
-          MedicalImages: medical.MedicalImages,
-        };
+        ...basic,
+        bloodType: medical.bloodType,
+        chronicDiseases: medical.chronicDiseases,
+        allergies: medical.allergies,
+        currentMedication: medical.currentMedication,
+        status: medical.status,
+        weight: medical.weight,
+        Summery: medical.Summery,
+        MedicalImages: medical.MedicalImages,
+      };
 
     registerMutation.mutate(
       {
@@ -430,26 +437,26 @@ const AuthPage: React.FC = () => {
     const hasFiles = medical.MedicalImages && medical.MedicalImages.length > 0;
     const data = hasFiles
       ? createFormData(basic, {
-          bloodType: medical?.bloodType ?? null,
-          chronicDiseases: medical?.chronicDiseases ?? null,
-          allergies: medical?.allergies ?? null,
-          currentMedication: medical?.currentMedication ?? null,
-          status: medical?.status ?? null,
-          weight: medical?.weight ?? null,
-          Summery: medical?.Summery ?? null,
-          MedicalImages: medical?.MedicalImages ?? [],
-        })
+        bloodType: medical?.bloodType ?? null,
+        chronicDiseases: medical?.chronicDiseases ?? null,
+        allergies: medical?.allergies ?? null,
+        currentMedication: medical?.currentMedication ?? null,
+        status: medical?.status ?? null,
+        weight: medical?.weight ?? null,
+        Summery: medical?.Summery ?? null,
+        MedicalImages: medical?.MedicalImages ?? [],
+      })
       : {
-          ...basic,
-          bloodType: medical?.bloodType ?? null,
-          chronicDiseases: medical?.chronicDiseases ?? null,
-          allergies: medical?.allergies ?? null,
-          currentMedication: medical?.currentMedication ?? null,
-          status: medical?.status ?? null,
-          weight: medical?.weight ?? null,
-          Summery: medical?.Summery ?? null,
-          MedicalImages: medical?.MedicalImages ?? null,
-        };
+        ...basic,
+        bloodType: medical?.bloodType ?? null,
+        chronicDiseases: medical?.chronicDiseases ?? null,
+        allergies: medical?.allergies ?? null,
+        currentMedication: medical?.currentMedication ?? null,
+        status: medical?.status ?? null,
+        weight: medical?.weight ?? null,
+        Summery: medical?.Summery ?? null,
+        MedicalImages: medical?.MedicalImages ?? null,
+      };
 
     registerMutation.mutate(
       {
@@ -657,16 +664,16 @@ const AuthPage: React.FC = () => {
                     <Field label="الأدوية الحالية" value={medical.currentMedication} onChange={setM('currentMedication')} placeholder="مثال : ميتفورمين 500mg..." />
                   </div>
                   <div className="md:col-span-2">
-                    <FileField 
-                      label="ملحقات طبية" 
-                      files={medical.MedicalImages} 
+                    <FileField
+                      label="ملحقات طبية"
+                      files={medical.MedicalImages}
                       onChange={(files) => setM('MedicalImages')(files)}
                       accept="image/*,.pdf,.doc,.docx"
                     />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold text-gray-600 dark:text-gray-300 text-start mb-1.5">ملخص الحالة الصحية</label>
-                    <textarea 
+                    <textarea
                       className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-5 py-4 text-sm outline-none transition-all duration-300 hover:border-emerald-300 dark:text-white focus:ring-2 focus:ring-emerald-500 resize-vertical min-h-32 focus:border-emerald-500"
                       value={medical.Summery}
                       placeholder="اكتب هنا ملخص حالتك الصحية ..."
