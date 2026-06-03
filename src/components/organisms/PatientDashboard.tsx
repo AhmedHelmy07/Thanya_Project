@@ -6,6 +6,7 @@ import ErrorScreen from "../atoms/ErrorScreen";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
 import { LuGalleryHorizontal } from "react-icons/lu";
+import { HeartRateIcon, LocationIcon } from "../atoms/icons";
 
 
 
@@ -516,11 +517,12 @@ const PatientDashboard = () => {
                           </span>
 
                         </p>
-
-                        <p className="mt-1 text-xs opacity-70">
-                          Lat: {d.lat} | Long:{" "}
-                          {d.long}
-                        </p>
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                          <LocationIcon className="h-4 w-4" />
+                          <span>
+                            Location: {d.lat}, {d.long}
+                          </span>
+                        </div>
 
                         {/* BATTERY */}
 
@@ -538,7 +540,7 @@ const PatientDashboard = () => {
 
                           </div>
 
-                          <div className="h-2 w-full rounded-full bg-gray-300">
+                          <div className="h-2 w-full rounded-full bg-gray-300 mb-2">
 
                             <div
                               className="h-2 rounded-full bg-emerald-500"
@@ -550,7 +552,26 @@ const PatientDashboard = () => {
                           </div>
 
                         </div>
+                        <div className="flex items-center justify-between text-sm text-gray-500 ">
+                          <div className="flex items-center gap-2">
+                            <HeartRateIcon className="h-4 w-4" />
+                            Heart Rate
+                          </div>
 
+                          <span>
+                            {d.heartRate} bpm
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm text-gray-500">
+                          <div className="flex items-center gap-2">
+                            <h2>O<span className="text-sm">2</span></h2>
+                            Oxygen Level
+                          </div>
+
+                          <span>
+                            {d.oxygenLevel}%
+                          </span>
+                        </div>
                         <p className="mt-2 text-xs opacity-60">
                           {d.lastUpdate}
                         </p>

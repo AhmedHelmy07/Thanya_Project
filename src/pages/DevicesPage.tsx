@@ -1,6 +1,6 @@
 import React from "react";
 import { useApiGet } from "../hooks/Apis hooks/useApi";
-import { DeviceIcon, HeartRateIcon, ClockIcon } from "../components/atoms/icons";
+import { DeviceIcon, HeartRateIcon, ClockIcon, LocationIcon } from "../components/atoms/icons";
 import LoadingScreen from "../components/atoms/LoadingScreen";
 import ErrorScreen from "../components/atoms/ErrorScreen";
 import { useAuth } from "@/context/AuthContext";
@@ -99,8 +99,11 @@ const DeviceCard: React.FC<{ device: ApiDevice }> = ({ device }) => {
         <div className="border-t border-gray-200 dark:border-gray-700" />
 
         {/* Location */}
-        <div className="text-sm text-gray-600 dark:text-gray-300">
-          📍 Location: {device.lat}, {device.long}
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+          <LocationIcon className="h-4 w-4" />
+          <span>
+            Location: {device.lat}, {device.long}
+          </span>
         </div>
 
         {/* Battery */}
@@ -131,7 +134,7 @@ const DeviceCard: React.FC<{ device: ApiDevice }> = ({ device }) => {
         </div>
         <div className="flex items-center justify-between text-sm text-gray-500">
           <div className="flex items-center gap-2">
-          <h2>O<span className="text-sm">2</span></h2>
+            <h2>O<span className="text-sm">2</span></h2>
             Oxygen Level
           </div>
 
