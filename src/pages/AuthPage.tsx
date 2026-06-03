@@ -394,19 +394,7 @@ const AuthPage: React.FC = () => {
 
     // Create FormData if there are files, otherwise use regular object
     const hasFiles = medical.MedicalImages && medical.MedicalImages.length > 0;
-    const data = hasFiles
-      ? createFormData(basic, medical)
-      : {
-        ...basic,
-        bloodType: medical.bloodType,
-        chronicDiseases: medical.chronicDiseases,
-        allergies: medical.allergies,
-        currentMedication: medical.currentMedication,
-        status: medical.status,
-        weight: medical.weight,
-        Summery: medical.Summery,
-        MedicalImages: medical.MedicalImages,
-      };
+    const data = createFormData(basic, medical);
 
     registerMutation.mutate(
       {
