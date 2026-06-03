@@ -5,20 +5,23 @@ import LoadingScreen from "../components/atoms/LoadingScreen";
 import ErrorScreen from "../components/atoms/ErrorScreen";
 import { AlertTriangle, CheckCircle, Clock, Activity } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { LocationIcon } from "@/components/atoms/icons";
 
 interface Alert {
   id: string;
-  device_name: string;
+  deviceName: string;
   time: string;
   resolved: boolean;
   details: string;
+  latitude: number;
+  longitude: number;
 }
 
 const SOSPage: React.FC = () => {
-    const { user } = useAuth();
-  
+  const { user } = useAuth();
 
-  const { data, isLoading, isError, error } = useApiGet("/sos/history", {}, ["sosHistory", user?.id],  !!user);
+
+  const { data, isLoading, isError, error } = useApiGet("/sos/history", {}, ["sosHistory", user?.id], !!user);
 
   const alertsList = data?.history ?? [];
 
@@ -73,7 +76,6 @@ const SOSPage: React.FC = () => {
         </AnimatePresence>
 
         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-8">
-
           <AnimatePresence>
             {alertsList.map((item: Alert, index: number) => (
               <motion.div
@@ -93,62 +95,80 @@ const SOSPage: React.FC = () => {
                   transition: { duration: 0.2 }
                 }}
                 className={`
-                  relative rounded-3xl border backdrop-blur-xl
-                  p-7 transition-all duration-300 overflow-hidden group
-                  ${item.resolved
+          relative rounded-3xl border backdrop-blur-xl
+          p-4 transition-all duration-300 overflow-hidden group
+          ${item.resolved
                     ? "bg-green-50/60 dark:bg-green-900/20 border-green-200 dark:border-green-800 hover:shadow-[0_15px_35px_-5px_rgba(16,185,129,0.45)]"
                     : "bg-red-50/60 dark:bg-red-900/20 border-red-200 dark:border-red-800 hover:shadow-[0_15px_35px_-5px_rgba(239,68,68,0.45)]"
                   }
-                `}
+        `}
               >
 
-                <span className={`
-                  absolute top-5 right-5 w-3 h-3 rounded-full animate-pulse
-                  ${item.resolved ? "bg-green-500" : "bg-red-500"}
-                `} />
+                {/* status dot */}
+                <span
+                  className={`
+            absolute top-4 right-4 w-2.5 h-2.5 rounded-full animate-pulse
+            ${item.resolved ? "bg-green-500" : "bg-red-500"}
+          `}
+                />
 
-                <div className="flex items-start gap-4 mb-5">
+                {/* HEADER */}
+                <div className="flex items-center gap-3 mb-3">
                   {item.resolved ? (
-                    <CheckCircle className="text-green-600 w-7 h-7 flex-shrink-0" />
+                    <CheckCircle className="text-green-600 w-6 h-6 flex-shrink-0" />
                   ) : (
-                    <Clock className="text-red-600 w-7 h-7 flex-shrink-0" />
+                    <Clock className="text-red-600 w-6 h-6 flex-shrink-0" />
                   )}
 
                   <div className="space-y-1">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                      {item.device_name}
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white leading-none">
+                      {item.deviceName}
                     </h3>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {item.time}
-                    </span>
                   </div>
                 </div>
 
-                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                  {item.details}
-                </p>
+                <div className="flex items-center gap-1 text-[13px] text-gray-500 dark:text-gray-400 mb-2">
+                  <LocationIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>
+                    Location: {item.latitude}, {item.longitude}
+                  </span>
+                </div>
 
-                <div className="mt-6">
+
+                <div className="pl-9">
+                  <p className="text-sm leading-6 text-gray-600 dark:text-gray-300 break-words whitespace-pre-wrap">
+                    {item.details}
+                  </p>
+                </div>
+
+                {/* STATUS BADGE */}
+                <div className="mt-5 pl-9">
                   <span className={`
-                    inline-block text-xs font-semibold px-5 py-2 rounded-full transition
-                    ${item.resolved
+            inline-block text-xs font-semibold px-4 py-1.5 rounded-full transition
+            ${item.resolved
                       ? "bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200"
                       : "bg-red-100 text-red-600 dark:bg-red-800 dark:text-red-200"
                     }
-                  `}>
+          `}>
                     {item.resolved ? "تم الحل" : "قيد المتابعة"}
+                  </span>
+                </div>
+
+                {/* TIME */}
+                <div className="mt-2 pl-9">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {item.time}
                   </span>
                 </div>
 
               </motion.div>
             ))}
           </AnimatePresence>
-
         </div>
 
       </div>
 
-    </section>
+    </section >
   );
 };
 
