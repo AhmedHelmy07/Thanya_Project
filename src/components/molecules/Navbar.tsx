@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, User, LogOut, Menu, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import logo from '/images/logos.png';
-import { useApiPost } from '../../hooks/Apis hooks/useApi';
+import { useApiGet, useApiPost } from '../../hooks/Apis hooks/useApi';
 
 const publicLinks = [
   { path: '/store', label: 'المتجر' },
@@ -23,10 +23,32 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { setUser, user, logout , isloggingOut } = useAuth();
+  const { setUser, user, logout, isloggingOut } = useAuth();
 
   const logoutMutation = useApiPost(['logout']);
 
+  const { data: sosHistoryData } = useApiGet(
+    '/sos/history',
+    {},
+    ['sosHistory', user?.id],
+    !!user && user?.role === 'User'
+  );
+
+  const unresolvedSosCount = useMemo(() => {
+    console.log('sosHistoryData1', sosHistoryData)
+
+    if (!sosHistoryData)
+      return []
+    console.log('sosHistoryData2', sosHistoryData)
+    const sosHistoryList = Array.isArray(sosHistoryData?.history)
+      ? sosHistoryData.history
+      : [sosHistoryData];
+
+    console.log('sosHistoryList', sosHistoryList);
+    return sosHistoryList.filter((item: any) => item?.resolved === false).length;
+
+
+  }, [sosHistoryData])
 
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -85,7 +107,7 @@ const Navbar: React.FC = () => {
           ))}
 
           {/* Protected Links */}
-          {(user && !isloggingOut) && 
+          {(user && !isloggingOut) &&
             protectedLinks.map((link) => (
               <button
                 key={link.path}
@@ -111,10 +133,22 @@ const Navbar: React.FC = () => {
           </button>
 
           {/* Notification */}
-          <Bell
-            className="cursor-pointer hover:text-emerald-500 transition"
-            size={20}
-          />
+          <button
+            type="button"
+            onClick={() => {
+              if (unresolvedSosCount > 0) {
+                navigate('/sos');
+              }
+            }}
+            className="relative inline-flex items-center rounded-xl p-2 text-gray-600 hover:text-emerald-500 transition dark:text-gray-300"
+          >
+            <Bell size={20} />
+            {unresolvedSosCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[0.65rem] font-bold text-white">
+                {unresolvedSosCount > 99 ? '99+' : unresolvedSosCount}
+              </span>
+            )}
+          </button>
 
           {/* User */}
           {user ? (
@@ -235,12 +269,12 @@ const Navbar: React.FC = () => {
                     },
                     {
                       onSuccess: () => {
-                        
+
                         logout();
                         navigate('/auth');
                       },
                       onError: () => {
-                        
+
                         logout();
                         navigate('/auth');
                       },

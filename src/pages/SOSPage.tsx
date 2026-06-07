@@ -15,6 +15,7 @@ interface Alert {
   details: string;
   latitude: number;
   longitude: number;
+  googleMapsUrl?: string;
 }
 
 const SOSPage: React.FC = () => {
@@ -129,9 +130,20 @@ const SOSPage: React.FC = () => {
 
                 <div className="flex items-center gap-1 text-[13px] text-gray-500 dark:text-gray-400 mb-2">
                   <LocationIcon className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>
-                    Location: {item.latitude}, {item.longitude}
-                  </span>
+                  {item.googleMapsUrl ? (
+                    <a
+                      href={item.googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline ml-1 text-sm text-emerald-600 dark:text-emerald-400"
+                    >
+                      Open in Google Maps
+                    </a>
+                  ) : (
+                    <span>
+                      Location: {item.latitude}, {item.longitude}
+                    </span>
+                  )}
                 </div>
 
 

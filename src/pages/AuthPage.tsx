@@ -244,6 +244,7 @@ const AuthPage: React.FC = () => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   /* Login state */
   const [loginEmail, setLoginEmail] = useState('');
@@ -333,25 +334,22 @@ const AuthPage: React.FC = () => {
       setEmailError(null);
     }
 
-    const phoneRegex = /^(\+20|0)?1[0-2,5]{1}[0-9]{8}$/;
+    // Phone: optional leading "+", digits only, max 15 digits
+    // Phone: optional leading "+", digits only, min 11 digits, max 15 digits
+    const phoneDigits = basic.phoneNumber.replace(/^\+/, '');
+    const phoneHasInvalidChars = /[^0-9]/.test(phoneDigits);
 
-    if (!phoneRegex.test(basic.phoneNumber)) {
-      setPhoneError("رقم الهاتف غير صحيح");
-      valid = false;
-    } else {
-      setPhoneError(null);
-    }
-
-    const passwordRegex =
-      /^(?=.*\d).{9,}$/;
-
-    if (!passwordRegex.test(basic.password)) {
-      setPasswordError(
-        "كلمة المرور يجب أن تكون 9 أحرف على الأقل وتحتوي على رقم"
+    if (
+      phoneHasInvalidChars ||
+      phoneDigits.length < 11 ||
+      phoneDigits.length > 15
+    ) {
+      setPhoneError(
+        "Phone number must contain only digits and be between 11 and 15 digits"
       );
       valid = false;
     } else {
-      setPasswordError(null);
+      setPhoneError(null);
     }
 
     if (!valid) return;
@@ -391,6 +389,7 @@ const AuthPage: React.FC = () => {
   const handleRegister2 = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (fileError) return;
 
     // Create FormData if there are files, otherwise use regular object
     const hasFiles = medical.MedicalImages && medical.MedicalImages.length > 0;
@@ -423,28 +422,7 @@ const AuthPage: React.FC = () => {
   const handleSkip = () => {
     // Create FormData if there are files, otherwise use regular object
     const hasFiles = medical.MedicalImages && medical.MedicalImages.length > 0;
-    const data = hasFiles
-      ? createFormData(basic, {
-        bloodType: medical?.bloodType ?? null,
-        chronicDiseases: medical?.chronicDiseases ?? null,
-        allergies: medical?.allergies ?? null,
-        currentMedication: medical?.currentMedication ?? null,
-        status: medical?.status ?? null,
-        weight: medical?.weight ?? null,
-        Summery: medical?.Summery ?? null,
-        MedicalImages: medical?.MedicalImages ?? [],
-      })
-      : {
-        ...basic,
-        bloodType: medical?.bloodType ?? null,
-        chronicDiseases: medical?.chronicDiseases ?? null,
-        allergies: medical?.allergies ?? null,
-        currentMedication: medical?.currentMedication ?? null,
-        status: medical?.status ?? null,
-        weight: medical?.weight ?? null,
-        Summery: medical?.Summery ?? null,
-        MedicalImages: medical?.MedicalImages ?? null,
-      };
+    const data = createFormData(basic, medical);
 
     registerMutation.mutate(
       {
@@ -560,9 +538,46 @@ const AuthPage: React.FC = () => {
                   <Field label="الاسم الأول" value={basic.firstName} onChange={setB('firstName')} placeholder="أدخل الاسم الأول" required />
                   <Field label="الاسم الأخير" value={basic.lastName} onChange={setB('lastName')} placeholder="أدخل الاسم الأخير" required />
                   <Field label="البريد الإلكتروني" type="text" value={basic.email} onChange={(v) => { setB('email')(v); setEmailError(null); }} placeholder="example@example.com" required error={emailError} />
-                  <PasswordField label="كلمة المرور" value={basic.password} onChange={(v) => { setB('password')(v); setPasswordError(null); }} placeholder=" 9 أحرف علي الأقل" required error={passwordError} />
+                  <PasswordField
+                    label="كلمة المرور"
+                    value={basic.password}
+                    onChange={(v) => {
+                      setB('password')(v);
+                      if (v.length > 0 && v.length < 9) {
+                        setPasswordError("Password must be at least 9 characters and can contain letters, numbers, or both");
+                      } else {
+                        setPasswordError(null);
+                      }
+                    }}
+                    placeholder="9 أحرف أو أكثر (حروف أو أرقام أو الاثنين)"
+                    required
+                    error={passwordError}
+                  />
                   <Field label="تاريخ الميلاد" type="date" value={basic.dateOfBirth} onChange={setB('dateOfBirth')} required />
-                  <Field label="رقم الهاتف" type="tel" value={basic.phoneNumber} onChange={(v) => { setB('phoneNumber')(v); setPhoneError(null); }} placeholder="+20..." required error={phoneError} />
+                  <Field
+                    label="رقم الهاتف"
+                    type="tel"
+                    value={basic.phoneNumber}
+                    onChange={(v) => {
+                      // Keep optional leading "+" then strip non-digit chars
+                      const hasPlus = v.startsWith('+');
+                      const digitsOnly = v.replace(/[^0-9]/g, '');
+                      // Enforce max 15 digits
+                      const trimmed = digitsOnly.slice(0, 15);
+                      const finalValue = hasPlus ? '+' + trimmed : trimmed;
+                      setB('phoneNumber')(finalValue);
+                      // Real-time error: flag if remaining non-digit/non-plus chars were present
+                      const invalidCharsPresent = /[^0-9+]/.test(v) || (v.indexOf('+') > 0);
+                      if (invalidCharsPresent) {
+                        setPhoneError("Phone number must contain valid digits only (maximum 15 digits)");
+                      } else {
+                        setPhoneError(null);
+                      }
+                    }}
+                    placeholder="+20..."
+                    required
+                    error={phoneError}
+                  />
                   <div className="md:col-span-2">
                     <Field label="العنوان" value={basic.address} onChange={setB('address')} placeholder="المدينة، الشارع..." required />
                   </div>
@@ -655,8 +670,26 @@ const AuthPage: React.FC = () => {
                     <FileField
                       label="ملحقات طبية"
                       files={medical.MedicalImages}
-                      onChange={(files) => setM('MedicalImages')(files)}
-                      accept="image/*,.pdf,.doc,.docx"
+                      onChange={(files) => {
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+                        const validFiles: File[] = [];
+                        let hasInvalid = false;
+                        files.forEach((file) => {
+                          if (allowedTypes.includes(file.type)) {
+                            validFiles.push(file);
+                          } else {
+                            hasInvalid = true;
+                          }
+                        });
+                        if (hasInvalid) {
+                          setFileError("Only images or PDF files are allowed");
+                        } else {
+                          setFileError(null);
+                        }
+                        setM('MedicalImages')(validFiles);
+                      }}
+                      accept=".jpg,.jpeg,.png,.webp,.pdf"
+                      error={fileError}
                     />
                   </div>
                   <div className="md:col-span-2">
