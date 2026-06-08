@@ -165,7 +165,7 @@ const PatientDashboard = () => {
   const { mutate: deleteDevice, isPending: isDeletingDevice } = useApiDelete(["dashboardUser", userd?.id]);
 
   const handleDeleteDevice = (deviceId: number) => {
-      console.log("DELETE ID:", deviceId);
+    console.log("DELETE ID:", deviceId);
 
     deleteDevice(
       {
@@ -570,7 +570,7 @@ const PatientDashboard = () => {
           </div>
           {(dashboard?.emergencyContacts ?? []).length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-gray-300 bg-white/70 p-10 text-center dark:border-gray-600 dark:bg-gray-900/50">
-            <p className="text-sm text-gray-500 dark:text-gray-300">No emergency contacts added.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300">No emergency contacts added.</p>
             </div>
           ) : (
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
@@ -796,7 +796,7 @@ const PatientDashboard = () => {
                           <button
                             type="button"
                             onClick={() => handleDeleteDevice(d.id)}
-                            
+
                             disabled={isDeletingDevice}
                             className="rounded-full bg-white/95 p-2 text-red-500 shadow hover:bg-white disabled:opacity-60"
                           >
@@ -976,8 +976,8 @@ const PatientDashboard = () => {
                             </div> */}
 
                             <p className="mt-1 max-w-full truncate text-center text-sm font-semibold text-emerald-600 dark:text-emerald-300">
-                              {file.fileName|| file.name || url.split('/').pop()}
-                              
+                              {file.fileName || file.name || url.split('/').pop()}
+
                             </p>
 
                             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -1337,6 +1337,35 @@ const PatientDashboard = () => {
                   Cancel
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+        {expandedImage && (
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4"
+            onClick={() => setExpandedImage(null)}
+          >
+            <div
+              className="relative w-full max-w-3xl rounded-2xl overflow-hidden"
+              style={{ maxHeight: "90vh" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpandedImage(null);
+                }}
+                className="absolute left-4 top-4 z-[10000] rounded-full bg-white p-2 text-gray-900 hover:bg-gray-200"
+              >
+                <X size={24} />
+              </button>
+
+              <img
+                src={expandedImage.url}
+                alt="expanded"
+                className="block w-full h-auto object-contain"
+                style={{ maxHeight: "90vh" }}
+              />
             </div>
           </div>
         )}
