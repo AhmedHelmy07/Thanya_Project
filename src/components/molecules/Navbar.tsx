@@ -207,13 +207,30 @@ const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* Mobile Button */}
-        <button
-          className="lg:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          <Menu size={28} />
-        </button>
+        {/* Mobile: Bell + Hamburger */}
+        <div className="lg:hidden flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (unresolvedSosCount > 0) {
+                navigate('/sos');
+                setMobileMenuOpen(false);
+              }
+            }}
+            className="relative inline-flex items-center rounded-xl p-2 text-gray-600 hover:text-emerald-500 transition dark:text-gray-300"
+          >
+            <Bell size={20} />
+            {unresolvedSosCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[0.65rem] font-bold text-white">
+                {unresolvedSosCount > 99 ? '99+' : unresolvedSosCount}
+              </span>
+            )}
+          </button>
+
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            <Menu size={28} />
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -254,7 +271,7 @@ const Navbar: React.FC = () => {
               ))}
 
             {/* Theme */}
-            <button onClick={toggleTheme} className="text-left">
+            <button onClick={() => { toggleTheme(); setMobileMenuOpen(false); }} className="text-left">
               {darkMode ? 'الوضع الفاتح ☀️' : 'الوضع الداكن 🌙'}
             </button>
 
@@ -272,11 +289,13 @@ const Navbar: React.FC = () => {
 
                         logout();
                         navigate('/auth');
+                        setMobileMenuOpen(false);
                       },
                       onError: () => {
 
                         logout();
                         navigate('/auth');
+                        setMobileMenuOpen(false);
                       },
                     }
                   );
@@ -287,7 +306,7 @@ const Navbar: React.FC = () => {
               </button>
             ) : (
               <button
-                onClick={() => navigate('/auth')}
+                onClick={() => { navigate('/auth'); setMobileMenuOpen(false); }}
                 className="text-emerald-600 dark:text-emerald-400 font-semibold"
               >
                 تسجيل الدخول

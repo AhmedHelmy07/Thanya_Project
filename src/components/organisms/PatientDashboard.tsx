@@ -1014,7 +1014,8 @@ const PatientDashboard = () => {
               onClick={() => setExpandedImage(null)}
             >
               <div
-                className="relative max-w-2xl max-h-[80vh]  rounded-2xl overflow-hidden"
+                className="relative w-full max-w-3xl rounded-2xl overflow-hidden"
+                style={{ maxHeight: '90vh' }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
@@ -1026,7 +1027,8 @@ const PatientDashboard = () => {
                 <img
                   src={expandedImage.url}
                   alt="expanded"
-                  className="max-w-2xl   max-h-[80vh] object-contain"
+                  className="block w-full h-auto object-contain"
+                  style={{ maxHeight: '90vh' }}
                 />
               </div>
             </div>
