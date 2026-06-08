@@ -465,7 +465,15 @@ const PatientDashboard = () => {
       />
     );
   }
+  const devices =
+    userd?.role === "Paramedic"
+      ? emergencyUser?.devices || []
+      : dashboard?.devices || [];
 
+  const emergencyContacts =
+    userd?.role === "Paramedic"
+      ? emergencyUser?.emergencyContacts || []
+      : dashboard?.emergencyContacts || [];
   return (
 
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-r from-emerald-50 to-white px-6 py-6 dark:from-gray-900 dark:to-gray-950">
@@ -568,13 +576,13 @@ const PatientDashboard = () => {
               </button>
             )}
           </div>
-          {(dashboard?.emergencyContacts ?? []).length === 0 ? (
+          {emergencyContacts.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-gray-300 bg-white/70 p-10 text-center dark:border-gray-600 dark:bg-gray-900/50">
               <p className="text-sm text-gray-500 dark:text-gray-300">No emergency contacts added.</p>
             </div>
           ) : (
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-              {(dashboard?.emergencyContacts ?? []).map(
+              {emergencyContacts.map(
                 (contact: any, index: number) => (
                   <div
                     key={index}
@@ -758,7 +766,7 @@ const PatientDashboard = () => {
 
             <div className="space-y-4">
 
-              {(dashboard?.devices ?? []).map(
+              {devices.map(
                 (d: any) => {
 
                   const isOnline =
