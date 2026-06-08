@@ -19,7 +19,7 @@ type ApiDevice = {
   status: string;
   lat: number;
   long: number;
-  googleMapUrl?: string;
+  googleMapsUrl?: string;
   lastUpdate: string;
   heartRate: number;
   oxygenLevel: number;
@@ -130,9 +130,9 @@ const DeviceCard: React.FC<{ device: ApiDevice; onDelete?: (deviceId: string) =>
         {/* Location */}
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
           <LocationIcon className="h-4 w-4" />
-          {device.googleMapUrl ? (
+          {device.googleMapsUrl ? (
             <a
-              href={device.googleMapUrl}
+              href={device.googleMapsUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-emerald-600 underline dark:text-emerald-400 hover:text-emerald-700"

@@ -165,6 +165,8 @@ const PatientDashboard = () => {
   const { mutate: deleteDevice, isPending: isDeletingDevice } = useApiDelete(["dashboardUser", userd?.id]);
 
   const handleDeleteDevice = (deviceId: number) => {
+      console.log("DELETE ID:", deviceId);
+
     deleteDevice(
       {
         path: `/Devices/${deviceId}`,
@@ -199,7 +201,7 @@ const PatientDashboard = () => {
         data: {
           name: editingDevice.name,
           battery: editingDevice.battery,
-          deviceId: editingDevice.id,
+          deviceId: String(editingDevice.id),
         },
       },
       {
@@ -214,13 +216,13 @@ const PatientDashboard = () => {
   };
 
   const [showEditContactModal, setShowEditContactModal] = useState(false);
-  const [editingContact, setEditingContact] = useState<any>({ id: null, name: "", phone: "" });
+  const [editingContact, setEditingContact] = useState<any>({ emergencyId: null, name: "", phone: "" });
   const [showAddContactModal, setShowAddContactModal] = useState(false);
   const [newContact, setNewContact] = useState({ name: "", phone: "" });
   const [phoneError, setPhoneError] = useState("");
 
   const openEditContact = (contact: any) => {
-    setEditingContact({ id: contact.id, name: contact.name || "", phone: contact.phone || "" });
+    setEditingContact({ emergencyId: contact.emergencyId, name: contact.name || "", phone: contact.phone || "" });
     setPhoneError("");
     setShowEditContactModal(true);
   };
@@ -249,11 +251,11 @@ const PatientDashboard = () => {
       setPhoneError(error);
       return;
     }
-    if (!editingContact?.id) return;
+    if (!editingContact?.emergencyId) return;
 
     updateEmergencyContact(
       {
-        path: `/EmergencyContacts/update/${editingContact.id}`,
+        path: `/EmergencyContacts/update/${editingContact.emergencyId}`,
         data: {
           name: editingContact.name,
           phone: phone.trim(),
@@ -273,10 +275,10 @@ const PatientDashboard = () => {
     );
   };
 
-  const handleDeleteContact = (contactId: any) => {
+  const handleDeleteContact = (emergencyId: any) => {
     deleteEmergencyContact(
       {
-        path: `/EmergencyContacts/delete/${contactId}`,
+        path: `/EmergencyContacts/delete/${emergencyId}`,
         data: {},
       },
       {
@@ -595,7 +597,7 @@ const PatientDashboard = () => {
 
                         <button
                           type="button"
-                          onClick={() => handleDeleteContact(contact.id)}
+                          onClick={() => handleDeleteContact(contact.emergencyId)}
                           disabled={isDeletingContact}
                           className="rounded-full bg-white/95 p-2 text-red-500 shadow hover:bg-white disabled:opacity-60"
                         >
@@ -794,6 +796,7 @@ const PatientDashboard = () => {
                           <button
                             type="button"
                             onClick={() => handleDeleteDevice(d.id)}
+                            
                             disabled={isDeletingDevice}
                             className="rounded-full bg-white/95 p-2 text-red-500 shadow hover:bg-white disabled:opacity-60"
                           >
@@ -973,7 +976,8 @@ const PatientDashboard = () => {
                             </div> */}
 
                             <p className="mt-1 max-w-full truncate text-center text-sm font-semibold text-emerald-600 dark:text-emerald-300">
-                              {file.filename || file.name || url.split('/').pop()}
+                              {file.fileName|| file.name || url.split('/').pop()}
+                              
                             </p>
 
                             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
